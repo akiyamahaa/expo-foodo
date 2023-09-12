@@ -6,64 +6,46 @@ import { extendTheme } from "native-base";
 
 export const newColorTheme = {
   primary: {
-    600: "#E6F853",
+    600: "#EC3900",
   },
-  muted: {
-    400: "#A3A3A3",
-    700: "#404040",
-    900: "#171717",
-  },
-  text: {
-    400: "#A3A3A3",
-    600: "#525252",
-    900: "#171717",
-  },
-  error: {
-    600: "#DC2626",
+  coolGray: {
+    100: "#F3F4F6",
+    400: "#9CA3AF",
+    500: "#6B7280",
   },
 };
 
 const appTheme = extendTheme({
   colors: newColorTheme,
   fontConfig: {
-    Roboto: {
-      100: {
-        normal: "Roboto_100Thin",
-        italic: "Roboto_100Thin_Italic",
-      },
+    Inter: {
       300: {
-        normal: "Roboto_300Light",
-        italic: "Roboto_300Light_Italic",
+        normal: "Inter_300Light",
       },
       400: {
-        normal: "Roboto_400Regular",
-        italic: "Roboto_400Regular_Italic",
+        normal: "Inter_400Regular",
       },
       500: {
-        normal: "Roboto_500Medium",
-        italic: "Roboto_500Medium_Italic",
+        normal: "Inter_500Medium",
+      },
+      600: {
+        normal: "Inter_600SemiBold",
       },
       700: {
-        normal: "Roboto_700Bold",
-        italic: "Roboto_700Bold_Italic",
+        normal: "Inter_700Bold",
+      },
+      800: {
+        normal: "Inter_800ExtraBold",
       },
       900: {
-        normal: "Roboto_900Black",
-        italic: "Roboto_900Black_Italic",
+        normal: "Inter_900Black",
       },
     },
   },
   fonts: {
-    heading: "Roboto",
-    body: "Roboto",
-    mono: "Roboto",
-  },
-  components: {
-    Text: {
-      baseStyle: {
-        color: "#fff",
-      },
-    },
+    heading: "Inter",
+    body: "Inter",
+    mono: "Inter",
   },
 });
 
@@ -72,3 +54,4 @@ declare module "native-base" {
   interface ICustomTheme extends AppThemeType {}
 }
 export default appTheme;
+

@@ -14,6 +14,7 @@ import Header from "../../components/Header";
 import OTPInputView from "@twotalltotems/react-native-otp-input";
 import { useDispatch } from "react-redux";
 import { removeLoading, setLoading } from "../../store/loading.reducer";
+import BoxContainer from "../../components/BoxContainer";
 
 type Props = {};
 
@@ -21,6 +22,7 @@ const OTPScreen = (props: Props) => {
   const dispatch = useDispatch();
   const { colors } = useTheme();
   const [OTP, setOTP] = useState("");
+  const handleBtnBack = () => {};
 
   async function verifyOTP() {
     try {
@@ -34,14 +36,17 @@ const OTPScreen = (props: Props) => {
 
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-      <Box flex={1} bgColor={"muted.900"}>
-        <Header.BasicHeader />
+      <BoxContainer>
+        <Header.BasicHeader
+          title="Quên mật khẩu"
+          handleBtnBack={handleBtnBack}
+        />
         <VStack px={6} mt={24} alignItems={"center"}>
           <VStack alignItems={"center"}>
-            <Text fontSize={16} fontWeight={400} color="white">
+            <Text fontSize={16} fontWeight={400} color="coolGray.800">
               Mã xác thực OTP đã được gửi tới
             </Text>
-            <Text fontSize={16} fontWeight={700} color="white">
+            <Text fontSize={16} fontWeight={700} color="coolGray.800">
               SĐT 0345622***
             </Text>
           </VStack>
@@ -62,7 +67,7 @@ const OTPScreen = (props: Props) => {
             </Text>
           </HStack>
         </VStack>
-      </Box>
+      </BoxContainer>
     </TouchableWithoutFeedback>
   );
 };

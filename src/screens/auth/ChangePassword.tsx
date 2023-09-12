@@ -10,28 +10,40 @@ type Props = {};
 
 const ChangePassword = (props: Props) => {
   const [showModal, setShowModal] = useState(false);
+  const handleBtnBack = () => {};
+
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-      <Box flex={1} bgColor={"muted.900"}>
+      <Box flex={1} bgColor={"coolGray.100"}>
         <PopUpNotice showModal={showModal} setShowModal={setShowModal} />
-        <Header.BasicHeader />
-        <VStack flex={1} px={6} marginTop={116} space={4}>
-          <InputLabel
-            label="Nhập mật khẩu"
-            placeholder="Nhập mật khẩu"
-            showIcon={true}
-            secureTextEntry
-          />
-          <InputLabel
-            label="Nhập lại mật khẩu"
-            placeholder="Nhập lại mật khẩu"
-            showIcon={true}
-            secureTextEntry
-          />
+        <Header.BasicHeader
+          title="Đặt lại mật khẩu"
+          handleBtnBack={handleBtnBack}
+        />
+        <VStack
+          flex={1}
+          px={6}
+          marginTop={120}
+          justifyContent={"space-between"}
+        >
+          <VStack space={4}>
+            <InputLabel
+              label="Nhập mật khẩu"
+              placeholder="Nhập mật khẩu"
+              showIcon={true}
+              secureTextEntry
+            />
+            <InputLabel
+              label="Nhập lại mật khẩu"
+              placeholder="Nhập lại mật khẩu"
+              showIcon={true}
+              secureTextEntry
+            />
+          </VStack>
+          <Box pb={8}>
+            <CustomButton btnText="Đổi mật khẩu" />
+          </Box>
         </VStack>
-        <Box px={6}>
-          <CustomButton btnText="Đổi mật khẩu" />
-        </Box>
       </Box>
     </TouchableWithoutFeedback>
   );

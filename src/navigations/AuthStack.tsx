@@ -17,13 +17,12 @@ const AuthStack = () => {
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="Login"
     >
-      <Stack.Screen name="Login" component={Login} />
-      <Stack.Screen name="SignUp" component={SignUp} />
-      <Stack.Screen name="Phone" component={PhoneScreen} />
-      <Stack.Screen name="OTP" component={OTPScreen} />
       <Stack.Screen name="ChangePassword" component={ChangePassword} />
+      <Stack.Screen name="OTP" component={OTPScreen} />
+      <Stack.Screen name="SignUp" component={SignUp} />
+      <Stack.Screen name="Login" component={Login} />
+      <Stack.Screen name="Phone" component={PhoneScreen} />
       <Stack.Screen name="PostAuth" component={PostAuth} />
     </Stack.Navigator>
   );

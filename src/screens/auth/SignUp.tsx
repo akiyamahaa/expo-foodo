@@ -3,17 +3,16 @@ import React from "react";
 import { Box, Center, Checkbox, HStack, Text, VStack } from "native-base";
 import InputLabel from "../../components/InputLabel";
 import CustomButton from "../../components/CustomButton";
+import BoxContainer from "../../components/BoxContainer";
 
 type Props = {};
 
 const SignUp = (props: Props) => {
   const handleForgetPassScreen = () => {};
   return (
-    <Box
-      flex={1}
+    <BoxContainer
       justifyContent={"center"}
       alignItems={"center"}
-      bgColor={"muted.900"}
       px={6}
     >
       <VStack flex={1} justifyContent={"center"} space={4}>
@@ -25,13 +24,13 @@ const SignUp = (props: Props) => {
           label="Nhập mật khẩu"
           placeholder="Nhập mật khẩu"
           showIcon={true}
-          secureTextEntry
+          secureTextEntry={true}
         />
         <InputLabel
           label="Nhập lại mật khẩu"
           placeholder="Nhập lại mật khẩu"
           showIcon={true}
-          secureTextEntry
+          secureTextEntry={true}
         />
         <Box mt={8}>
           <CustomButton btnText={"Đăng ký"} />
@@ -50,7 +49,7 @@ const SignUp = (props: Props) => {
           </Text>
         </TouchableOpacity>
       </HStack>
-    </Box>
+    </BoxContainer>
   );
 };
 

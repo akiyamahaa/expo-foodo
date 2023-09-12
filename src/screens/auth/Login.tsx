@@ -1,21 +1,17 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
-import React from "react";
-import { Box, Center, Checkbox, HStack, Text, VStack } from "native-base";
+import React, { useState } from "react";
+import { Box, HStack, Text, VStack } from "native-base";
 import InputLabel from "../../components/InputLabel";
 import CustomButton from "../../components/CustomButton";
+import BoxContainer from "../../components/BoxContainer";
 
 type Props = {};
 
 const Login = (props: Props) => {
+  const [error, setError] = useState("");
   const handleForgetPassScreen = () => {};
   return (
-    <Box
-      flex={1}
-      justifyContent={"center"}
-      alignItems={"center"}
-      bgColor={"muted.900"}
-      px={6}
-    >
+    <BoxContainer justifyContent={"center"} alignItems={"center"} px={6}>
       <VStack flex={1} justifyContent={"center"} space={4}>
         <InputLabel
           label="Số điện thoại"
@@ -24,20 +20,17 @@ const Login = (props: Props) => {
         <InputLabel
           label="Mật khẩu"
           placeholder="Nhập mật khẩu"
+          secureTextEntry={true}
           showIcon={true}
         />
         <HStack justifyContent={"space-between"} mb={6}>
-          <HStack space={2}>
-            <Checkbox
-              value="test"
-              accessibilityLabel="This is a dummy checkbox"
-              borderRadius={100}
-              backgroundColor={"transparent"}
-            />
-            <Text fontWeight={400} fontSize={12} color={"text.600"}>
-              Ghi nhớ đăng nhập
-            </Text>
-          </HStack>
+          <Box>
+            {error && (
+              <Text fontSize={12} fontWeight={400} color="error.500">
+                {error}
+              </Text>
+            )}
+          </Box>
           <TouchableOpacity onPress={handleForgetPassScreen}>
             <Text
               fontSize={12}
@@ -48,16 +41,18 @@ const Login = (props: Props) => {
             </Text>
           </TouchableOpacity>
         </HStack>
-        <Box>
+        <Box px={"20%"}>
           <CustomButton btnText={"Đăng nhập"} />
         </Box>
       </VStack>
       <HStack mb={16} space={1}>
-        <Text fontWeight={400}>Bạn chưa có tài khoản?</Text>
+        <Text fontWeight={400} fontSize={14}>
+          Bạn chưa có tài khoản?
+        </Text>
         <TouchableOpacity>
           <Text
-            fontWeight={500}
-            fontSize={12}
+            fontWeight={400}
+            fontSize={14}
             color={"primary.600"}
             textDecorationLine={"underline"}
           >
@@ -65,7 +60,7 @@ const Login = (props: Props) => {
           </Text>
         </TouchableOpacity>
       </HStack>
-    </Box>
+    </BoxContainer>
   );
 };
 

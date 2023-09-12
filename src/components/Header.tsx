@@ -2,6 +2,7 @@ import { StyleSheet, TouchableOpacity } from "react-native";
 import React from "react";
 import { Box, HStack, Icon, Input, Text, useTheme } from "native-base";
 import { Add, ArrowLeft2, SearchNormal, Setting2 } from "iconsax-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const HomeHeader = ({ name = "Jack 5M", handleSetting = null }: any) => {
   return (
@@ -57,6 +58,7 @@ type Props = {
 };
 
 const BasicHeader = (props: Props) => {
+  const insets = useSafeAreaInsets();
   // set when have user
   const user = true;
   const {
@@ -67,7 +69,12 @@ const BasicHeader = (props: Props) => {
     handleSearch = null,
   } = props;
   return (
-    <Box bgColor={user ? "muted.800" : "muted.900"} px={4} py={2}>
+    <Box
+      bgColor={"primary.600"}
+      px={4}
+      py={2}
+      style={{ paddingTop: insets.top }}
+    >
       <HStack alignItems={"center"} justifyContent={"space-between"} mb={2}>
         {handleBtnBack ? (
           <TouchableOpacity onPress={handleBtnBack}>
@@ -76,7 +83,7 @@ const BasicHeader = (props: Props) => {
         ) : (
           <Box size={8} />
         )}
-        <Text fontSize={16} fontWeight={500}>
+        <Text fontSize={16} fontWeight={500} color="#fff">
           {title}
         </Text>
 

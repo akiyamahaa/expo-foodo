@@ -22,27 +22,30 @@ const InputLabel = (props: Props) => {
   const { colors } = useTheme();
   return (
     <Box width="100%">
-      <Text mb={1} color={"text.400"}>
+      <Text mb={1} color={"coolGray.500"}>
         {label}
       </Text>
       <Input
         width={"100%"}
-        color="text.50"
-        height={10}
+        color="coolGray.800"
+        px={3}
+        py={4}
         borderRadius={100}
-        borderColor={"muted.700"}
-        secureTextEntry={secureTextEntry && show}
+        backgroundColor={"#fff"}
+        borderWidth={0}
+        fontSize={16}
+        secureTextEntry={secureTextEntry && !show}
         placeholder={placeholder}
-        placeholderTextColor={colors.text[600]}
+        placeholderTextColor={colors.coolGray[400]}
         InputRightElement={
           showIcon ? (
             <Pressable onPress={() => setShow(!show)}>
               <Icon
                 as={
                   show ? (
-                    <EyeSlash size="24" color={colors.muted[400]} />
-                  ) : (
                     <Eye size="24" color={colors.muted[400]} />
+                  ) : (
+                    <EyeSlash size="24" color={colors.muted[400]} />
                   )
                 }
                 size={5}

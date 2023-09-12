@@ -11,12 +11,6 @@ import { StatusBar } from "expo-status-bar";
 import { RootState, useAppDispatch, useAppSelector } from "../store";
 import AuthStack from "./AuthStack";
 import TabNav from "./TabNav";
-import CreateMenu from "../screens/CreateMenu";
-import CreateMenu2 from "../screens/CreateMenu2";
-import BMI from "../screens/BMI";
-import Setting from "../screens/Setting";
-import Feedback from "../screens/Feedback";
-import About from "../screens/About";
 
 const Stack = createNativeStackNavigator<any>();
 
@@ -31,11 +25,9 @@ const Root = () => {
   return (
     <Box
       style={{
-        paddingTop: insets.top,
-        paddingBottom: 8,
         paddingLeft: insets.left,
         paddingRight: insets.right,
-        backgroundColor: user ? colors.muted[800] : colors.muted[900],
+        backgroundColor: colors.primary[600],
         flex: 1,
       }}
     >
@@ -48,14 +40,8 @@ const Root = () => {
             headerShown: false,
           }}
         >
-          <Stack.Screen name="About" component={About} />
-          <Stack.Screen name="Feedback" component={Feedback} />
-          <Stack.Screen name="Setting" component={Setting} />
-          <Stack.Screen name="BMI" component={BMI} />
-          <Stack.Screen name="CreateMenu2" component={CreateMenu2} />
-          {user && <Stack.Screen name="TabNav" component={TabNav} />}
-          <Stack.Screen name="CreateMenu" component={CreateMenu} />
-          {!user && <Stack.Screen name="Auth" component={AuthStack} />}
+          {true && <Stack.Screen name="Auth" component={AuthStack} />}
+          {/* {user && <Stack.Screen name="TabNav" component={TabNav} />} */}
         </Stack.Navigator>
       </NavigationContainer>
     </Box>

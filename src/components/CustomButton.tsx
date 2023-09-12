@@ -14,7 +14,7 @@ const CustomButton = (props: Props) => {
       width="100%"
       borderRadius={100}
       bgColor={active ? "primary.600" : "muted.900"}
-      height={10}
+      p={3}
       borderColor={"primary.600"}
       borderWidth={1}
       alignItems={"center"}
@@ -22,8 +22,8 @@ const CustomButton = (props: Props) => {
     >
       <Text
         fontWeight={500}
-        fontSize={14}
-        color={active ? "text.900" : "primary.600"}
+        fontSize={16}
+        color={active ? "text.50" : "primary.600"}
       >
         {btnText}
       </Text>
