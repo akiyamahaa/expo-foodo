@@ -1,24 +1,40 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
 import React from "react";
-import { Box, HStack, Icon, Input, Text, useTheme } from "native-base";
-import { Add, ArrowLeft2, SearchNormal, Setting2 } from "iconsax-react-native";
+import { Box, HStack, Icon, Input, Text, VStack, useTheme } from "native-base";
+import { Add, ArrowLeft2, Location, SearchNormal } from "iconsax-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Image } from "expo-image";
 
-const HomeHeader = ({ name = "Jack 5M", handleSetting = null }: any) => {
+const HomeHeader = ({ name = "Jack 5M" }: any) => {
+  const insets = useSafeAreaInsets();
   return (
-    <Box bgColor={"muted.800"} px={4} py={2}>
-      <HStack alignItems={"center"} justifyContent={"space-between"}>
-        <Text fontSize={16} fontWeight={500}>
-          Hi, {name}
-        </Text>
-        {handleSetting && (
-          <Box>
-            <TouchableOpacity onPress={handleSetting}>
-              <Setting2 size="24" color="#fff" />
-            </TouchableOpacity>
+    <Box
+      bgColor={"primary.600"}
+      px={4}
+      py={2}
+      style={{ paddingTop: insets.top }}
+    >
+      <VStack space={2}>
+        <HStack alignItems={"center"} justifyContent={"space-between"}>
+          <HStack space={1}>
+            <Box>
+              <Location size="24" color="#fff" />
+            </Box>
+            <Text fontSize={16} color="#fff">
+              Hà nội
+            </Text>
+          </HStack>
+          <Box size={8} borderRadius={100} overflow={"hidden"}>
+            <Image
+              source={{
+                uri: "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Yasuo_0.jpg",
+              }}
+              style={{ width: 32, height: 32 }}
+            />
           </Box>
-        )}
-      </HStack>
+        </HStack>
+        <SearchingBar />
+      </VStack>
     </Box>
   );
 };
@@ -28,7 +44,7 @@ const SearchingBar = () => {
   return (
     <Box mb={2}>
       <Input
-        backgroundColor={"white"}
+        backgroundColor={"#fff"}
         borderRadius={100}
         px={1.5}
         py={3}
@@ -55,6 +71,7 @@ type Props = {
   handleDone?: any;
   handleSearch?: any;
   title: string;
+  bgColor?: string;
 };
 
 const BasicHeader = (props: Props) => {
@@ -67,18 +84,14 @@ const BasicHeader = (props: Props) => {
     handleAdd = null,
     handleDone = null,
     handleSearch = null,
+    bgColor = "primary.600",
   } = props;
   return (
-    <Box
-      bgColor={"primary.600"}
-      px={4}
-      py={2}
-      style={{ paddingTop: insets.top }}
-    >
+    <Box bgColor={bgColor} px={4} py={2} style={{ paddingTop: insets.top }}>
       <HStack alignItems={"center"} justifyContent={"space-between"} mb={2}>
         {handleBtnBack ? (
           <TouchableOpacity onPress={handleBtnBack}>
-            <ArrowLeft2 size="32" color="white" />
+            <ArrowLeft2 size="32" color="#fff" />
           </TouchableOpacity>
         ) : (
           <Box size={8} />
@@ -89,7 +102,7 @@ const BasicHeader = (props: Props) => {
 
         {handleAdd && (
           <TouchableOpacity onPress={handleAdd}>
-            <Add size="32" color="white" />
+            <Add size="32" color="#fff" />
           </TouchableOpacity>
         )}
         {handleDone && (

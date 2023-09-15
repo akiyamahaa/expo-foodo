@@ -17,7 +17,7 @@ type Props = {
 } & IInputProps;
 
 const InputLabel = (props: Props) => {
-  const { label, secureTextEntry, placeholder, showIcon = false } = props;
+  const { label, secureTextEntry, placeholder,borderWidth = 0, showIcon = false } = props;
   const [show, setShow] = useState(false);
   const { colors } = useTheme();
   return (
@@ -32,7 +32,7 @@ const InputLabel = (props: Props) => {
         py={4}
         borderRadius={100}
         backgroundColor={"#fff"}
-        borderWidth={0}
+        borderWidth={borderWidth}
         fontSize={16}
         secureTextEntry={secureTextEntry && !show}
         placeholder={placeholder}

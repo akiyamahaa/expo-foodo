@@ -17,7 +17,6 @@ import {
   Inter_800ExtraBold,
   Inter_900Black,
 } from "@expo-google-fonts/inter";
-import AppLoading from "expo-app-loading";
 import appTheme from "./src/theme";
 
 SplashScreen.preventAutoHideAsync();
@@ -41,7 +40,7 @@ export default function App() {
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null;
   }
   return (
     <NativeBaseProvider theme={appTheme}>
@@ -53,4 +52,3 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({});
-

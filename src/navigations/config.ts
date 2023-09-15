@@ -10,7 +10,7 @@ export type RootStackParams = {
 };
 export type BottomTabsParams = {
   Home: undefined;
-  Menu: undefined;
+  Bookmark: undefined;
   Profile: undefined;
 };
 
@@ -20,5 +20,4 @@ export type AuthStackParams = {
   Phone: undefined;
   OTP: undefined;
   ChangePassword: undefined;
-  PostAuth: undefined;
 };

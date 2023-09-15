@@ -11,6 +11,10 @@ import { StatusBar } from "expo-status-bar";
 import { RootState, useAppDispatch, useAppSelector } from "../store";
 import AuthStack from "./AuthStack";
 import TabNav from "./TabNav";
+import Restaurant from "../screens/Restaurant";
+import CommentForm from "../screens/CommentForm";
+import NewPassword from "../screens/NewPassword";
+import Policy from "../screens/Policy";
 
 const Stack = createNativeStackNavigator<any>();
 
@@ -40,8 +44,12 @@ const Root = () => {
             headerShown: false,
           }}
         >
-          {true && <Stack.Screen name="Auth" component={AuthStack} />}
-          {/* {user && <Stack.Screen name="TabNav" component={TabNav} />} */}
+          <Stack.Screen name="Policy" component={Policy} />
+          <Stack.Screen name="NewPassword" component={NewPassword} />
+          <Stack.Screen name="CommentForm" component={CommentForm} />
+          {user && <Stack.Screen name="TabNav" component={TabNav} />}
+          <Stack.Screen name="Restaurant" component={Restaurant} />
+          {!user && <Stack.Screen name="Auth" component={AuthStack} />}
         </Stack.Navigator>
       </NavigationContainer>
     </Box>

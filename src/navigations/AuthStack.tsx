@@ -7,7 +7,6 @@ import { AuthStackParams } from "./config";
 import PhoneScreen from "../screens/auth/PhoneScreen";
 import OTPScreen from "../screens/auth/OTPScreen";
 import ChangePassword from "../screens/auth/ChangePassword";
-import PostAuth from "../screens/auth/PostAuth";
 
 const Stack = createNativeStackNavigator<AuthStackParams>();
 
@@ -23,7 +22,6 @@ const AuthStack = () => {
       <Stack.Screen name="SignUp" component={SignUp} />
       <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="Phone" component={PhoneScreen} />
-      <Stack.Screen name="PostAuth" component={PostAuth} />
     </Stack.Navigator>
   );
 };

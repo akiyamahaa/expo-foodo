@@ -3,15 +3,14 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   ProfileCircle,
-  Activity,
+  Bookmark as BookmarkIcon,
   Home3 as HomeIcon,
 } from "iconsax-react-native";
-import Home from "../screens/Home";
 import { useTheme } from "native-base";
 import { BottomTabsParams } from "./config";
 import Profile from "../screens/Profile";
-import Menu from "../screens/Menu";
-// import { BottomTabsParams } from "./types";
+import Home from "../screens/Home";
+import Bookmark from "../screens/Bookmark";
 
 const Tab = createBottomTabNavigator<BottomTabsParams>();
 
@@ -21,14 +20,14 @@ const TabNav = () => {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarInactiveTintColor: colors.muted[300],
+        tabBarInactiveTintColor: colors.coolGray[300],
         tabBarActiveTintColor: colors.primary[600],
         tabBarShowLabel: false,
         tabBarStyle: {
           bottom: 0,
-          backgroundColor: colors.muted[800],
-          borderTopWidth: 0,
+          borderTopWidth: 1,
           paddingTop: 12,
+          borderTopColor: colors.coolGray[300],
         },
       }}
     >
@@ -42,11 +41,11 @@ const TabNav = () => {
         }}
       />
       <Tab.Screen
-        name="Menu"
-        component={Menu}
+        name="Bookmark"
+        component={Bookmark}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Activity size={size} color={color} variant="Bold" />
+            <BookmarkIcon size={size} color={color} variant="Bold" />
           ),
         }}
       />
