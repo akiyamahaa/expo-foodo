@@ -11,20 +11,19 @@ import { StatusBar } from "expo-status-bar";
 import { RootState, useAppDispatch, useAppSelector } from "../store";
 import AuthStack from "./AuthStack";
 import TabNav from "./TabNav";
-import Restaurant from "../screens/Restaurant";
-import CommentForm from "../screens/CommentForm";
-import NewPassword from "../screens/NewPassword";
-import Policy from "../screens/Policy";
+import Policy from "../screens/main/Policy";
+import NewPassword from "../screens/main/NewPassword";
+import CommentForm from "../screens/main/CommentForm";
+import Restaurant from "../screens/main/Restaurant";
 
-const Stack = createNativeStackNavigator<any>();
+const Stack = createNativeStackNavigator<RootStackParams>();
 
 const Root = () => {
-  // const user = useAppSelector((state: RootState) => state.user.user);
+  const user = useAppSelector((state: RootState) => state.user.user);
   const dispatch = useAppDispatch();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
-
-  const user = true;
+  console.log("🚀 ~ file: Root.tsx:23 ~ Root ~ user:", user);
 
   return (
     <Box
@@ -44,12 +43,16 @@ const Root = () => {
             headerShown: false,
           }}
         >
-          <Stack.Screen name="Policy" component={Policy} />
-          <Stack.Screen name="NewPassword" component={NewPassword} />
-          <Stack.Screen name="CommentForm" component={CommentForm} />
-          {user && <Stack.Screen name="TabNav" component={TabNav} />}
-          <Stack.Screen name="Restaurant" component={Restaurant} />
           {!user && <Stack.Screen name="Auth" component={AuthStack} />}
+          {user && (
+            <Stack.Group>
+              <Stack.Screen name="TabNav" component={TabNav} />
+              <Stack.Screen name="Policy" component={Policy} />
+              <Stack.Screen name="NewPassword" component={NewPassword} />
+              <Stack.Screen name="CommentForm" component={CommentForm} />
+              <Stack.Screen name="Restaurant" component={Restaurant} />
+            </Stack.Group>
+          )}
         </Stack.Navigator>
       </NavigationContainer>
     </Box>

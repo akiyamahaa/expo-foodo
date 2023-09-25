@@ -1,9 +1,9 @@
 import { StyleSheet } from "react-native";
 import React from "react";
 import { Box, Center, Text, VStack, useTheme } from "native-base";
-import Header from "../components/Header";
+import Header from "../../components/Header";
 import { Bookmark as BookmarkIcon } from "iconsax-react-native";
-import ItemCard from "../components/ItemCard";
+import ItemCard from "../../components/ItemCard";
 
 type Props = {};
 

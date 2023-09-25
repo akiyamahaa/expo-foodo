@@ -1,3 +1,4 @@
+import "react-native-gesture-handler";
 import { NativeBaseProvider } from "native-base";
 import { StyleSheet } from "react-native";
 import { Provider } from "react-redux";
@@ -18,6 +19,7 @@ import {
   Inter_900Black,
 } from "@expo-google-fonts/inter";
 import appTheme from "./src/theme";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 export default function App() {
@@ -43,11 +45,13 @@ export default function App() {
     return null;
   }
   return (
-    <NativeBaseProvider theme={appTheme}>
-      <Provider store={store}>
-        <Root />
-      </Provider>
-    </NativeBaseProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NativeBaseProvider theme={appTheme}>
+        <Provider store={store}>
+          <Root />
+        </Provider>
+      </NativeBaseProvider>
+    </GestureHandlerRootView>
   );
 }
 

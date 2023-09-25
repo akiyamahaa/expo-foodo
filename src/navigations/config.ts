@@ -7,6 +7,10 @@ export type RootStackParams = {
   CreateMenu2: undefined;
   BMI: undefined;
   Setting: undefined;
+  Policy: undefined;
+  NewPassword: undefined;
+  CommentForm: undefined;
+  Restaurant: undefined;
 };
 export type BottomTabsParams = {
   Home: undefined;
@@ -19,5 +23,9 @@ export type AuthStackParams = {
   SignUp: undefined;
   Phone: undefined;
   OTP: undefined;
-  ChangePassword: undefined;
+  ForgotPassword: undefined;
+  PostAuth: {
+    phone: string;
+    password: string;
+  };
 };

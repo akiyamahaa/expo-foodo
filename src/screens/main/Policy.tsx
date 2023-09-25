@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 import React from "react";
 import { Box, Text } from "native-base";
-import Header from "../components/Header";
+import Header from "../../components/Header";
 
 type Props = {};
 

@@ -10,8 +10,8 @@ const LoadingOverlay = () => {
     loading && (
       <Center flex={1} style={styles.container}>
         <HStack space={2} justifyContent="center">
-          <Spinner accessibilityLabel="Loading posts" color={"primary.Main"} />
-          <Heading color={"primary.Main"} fontSize="md">
+          <Spinner accessibilityLabel="Loading posts" color={"primary.600"} />
+          <Heading color={"primary.600"} fontSize="md">
             Loading
           </Heading>
         </HStack>

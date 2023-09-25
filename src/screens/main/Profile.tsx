@@ -4,25 +4,29 @@ import {
   Avatar,
   Box,
   HStack,
-  IBoxProps,
   Text,
   VStack,
   useTheme,
 } from "native-base";
-import Header from "../components/Header";
 import {
   ArrowRight2,
   InfoCircle,
   Lock,
   MessageQuestion,
 } from "iconsax-react-native";
-import CustomButton from "../components/CustomButton";
+import Header from "../../components/Header";
+import CustomButton from "../../components/CustomButton";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAppDispatch } from "../../store";
+import { removeUser } from "../../store/user.reducer";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParams } from "../../navigations/config";
 
-type Props = {};
+type Props = {} & NativeStackScreenProps<RootStackParams, "TabNav">;
 
 const BoxInfo = ({ type }: { type: string }) => {
   const { colors } = useTheme();
-  let title, IconTag;
+  let title, IconTag ;
   if (type == "password") {
     title = "Mật khẩu";
     IconTag = <Lock size="32" color={colors.coolGray[500]} variant="Bold" />;
@@ -55,8 +59,19 @@ const BoxInfo = ({ type }: { type: string }) => {
 };
 
 const Profile = (props: Props) => {
+  const { navigation } = props;
   const { colors } = useTheme();
+  const dispatch = useAppDispatch();
   const type = ["password", "info", "policy"];
+
+  const handleLogout = async () => {
+    await AsyncStorage.clear();
+    dispatch(removeUser());
+  };
+
+  const handlePolicy = () => {
+    navigation.navigate('Policy')
+  }
   return (
     <Box flex={1} bgColor={"#fff"}>
       <Header.BasicHeader title="Cá nhân" />
@@ -97,7 +112,7 @@ const Profile = (props: Props) => {
           </Box>
         </VStack>
         <Box>
-          <CustomButton btnText="Đăng xuất" />
+          <CustomButton btnText="Đăng xuất" handleBtn={handleLogout} />
         </Box>
       </VStack>
     </Box>

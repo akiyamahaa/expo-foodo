@@ -17,7 +17,13 @@ type Props = {
 } & IInputProps;
 
 const InputLabel = (props: Props) => {
-  const { label, secureTextEntry, placeholder,borderWidth = 0, showIcon = false } = props;
+  const {
+    label,
+    secureTextEntry,
+    showIcon = false,
+    borderWidth = 0,
+    ...inputProps
+  } = props;
   const [show, setShow] = useState(false);
   const { colors } = useTheme();
   return (
@@ -35,7 +41,6 @@ const InputLabel = (props: Props) => {
         borderWidth={borderWidth}
         fontSize={16}
         secureTextEntry={secureTextEntry && !show}
-        placeholder={placeholder}
         placeholderTextColor={colors.coolGray[400]}
         InputRightElement={
           showIcon ? (
@@ -57,6 +62,7 @@ const InputLabel = (props: Props) => {
             <Box />
           )
         }
+        {...inputProps}
       />
     </Box>
   );

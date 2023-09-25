@@ -8,9 +8,9 @@ import {
 } from "iconsax-react-native";
 import { useTheme } from "native-base";
 import { BottomTabsParams } from "./config";
-import Profile from "../screens/Profile";
-import Home from "../screens/Home";
-import Bookmark from "../screens/Bookmark";
+import Home from "../screens/main/Home";
+import Bookmark from "../screens/main/Bookmark";
+import Profile from "../screens/main/Profile";
 
 const Tab = createBottomTabNavigator<BottomTabsParams>();
 

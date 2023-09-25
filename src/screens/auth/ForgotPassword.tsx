@@ -5,12 +5,17 @@ import Header from "../../components/Header";
 import InputLabel from "../../components/InputLabel";
 import CustomButton from "../../components/CustomButton";
 import PopUpNotice from "../../components/PopUpNotice";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { AuthStackParams } from "../../navigations/config";
 
-type Props = {};
+type Props = {} & NativeStackScreenProps<AuthStackParams, "ForgotPassword">;
 
-const ChangePassword = (props: Props) => {
+const ForgotPassword = (props: Props) => {
+  const { navigation } = props;
   const [showModal, setShowModal] = useState(false);
-  const handleBtnBack = () => {};
+  const handleBtnBack = () => {
+    navigation.goBack();
+  };
 
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -49,6 +54,6 @@ const ChangePassword = (props: Props) => {
   );
 };
 
-export default ChangePassword;
+export default ForgotPassword;
 
 const styles = StyleSheet.create({});

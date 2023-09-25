@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, TouchableOpacity } from "react-native";
 import React from "react";
 import {
   Box,
@@ -9,8 +9,6 @@ import {
   VStack,
   useTheme,
 } from "native-base";
-import BackgroundLayout from "../components/BackgroundLayout";
-import Header from "../components/Header";
 import {
   Bag2,
   Bookmark,
@@ -20,18 +18,22 @@ import {
   Messages3,
   Shop,
 } from "iconsax-react-native";
-import RestaurantComment from "../components/RestaurantComment";
-
-type Props = {};
+import BackgroundLayout from "../../components/BackgroundLayout";
+import RestaurantComment from "../../components/RestaurantComment";
+import Header from "../../components/Header";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParams } from "../../navigations/config";
+type Props = {} & NativeStackScreenProps<RootStackParams, "Restaurant">;
 
 const Restaurant = (props: Props) => {
+  const { navigation } = props;
   const { colors } = useTheme();
   const handleBtnBack = () => {};
   return (
     <Box flex={1} bgColor={"#fff"}>
       <Box height="350">
         <BackgroundLayout
-          imageSource={require("../../assets/restaurant_image.png")}
+          imageSource={require("../../../assets/restaurant_image.png")}
         >
           <VStack flex={1} justifyContent={"space-between"}>
             <Header.BasicHeader
@@ -100,8 +102,16 @@ const Restaurant = (props: Props) => {
             </Text>
           </HStack>
           <HStack space={2} alignItems={"center"}>
-            <Messages3 size="24" color="#FF8A65" />
-            <Bookmark size="24" color="#FF8A65" />
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("CommentForm");
+              }}
+            >
+              <Messages3 size="24" color="#FF8A65" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate("TabNav")}>
+              <Bookmark size="24" color="#FF8A65" />
+            </TouchableOpacity>
             <Center size="8" borderRadius={100} bgColor={"primary.600"}>
               <Text fontWeight={700} fontSize={14} color="#fff">
                 7.2

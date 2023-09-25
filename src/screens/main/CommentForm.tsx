@@ -10,8 +10,8 @@ import {
   VStack,
   useTheme,
 } from "native-base";
-import Header from "../components/Header";
-import CustomButton from "../components/CustomButton";
+import Header from "../../components/Header";
+import CustomButton from "../../components/CustomButton";
 
 type Props = {};
 type RatingProps = {
@@ -32,7 +32,7 @@ const Rating = (props: RatingProps) => {
           <Slider
             maxValue={10}
             minValue={0}
-            defaultValue={0}
+            defaultValue={5}
             size="md"
             onChange={(v) => {
               setOnChangeValue(Math.floor(v));
@@ -111,7 +111,7 @@ const CommentForm = (props: Props) => {
           </VStack>
           {/* TODO: Make Add image Camera Func */}
         </VStack>
-        <Box>
+        <Box mb={4}>
           <CustomButton btnText="Gửi" />
         </Box>
       </VStack>
