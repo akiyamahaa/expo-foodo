@@ -1,25 +1,50 @@
 import { StyleSheet } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Center, Text, VStack, useTheme } from "native-base";
 import Header from "../../components/Header";
 import { Bookmark as BookmarkIcon } from "iconsax-react-native";
 import ItemCard from "../../components/ItemCard";
+import { IRestaurant } from "../../type/restaurant";
+import { RootState, useAppSelector } from "../../store";
+import { doc, getDoc } from "firebase/firestore";
+import { firebaseDb } from "../../firebase";
 
 type Props = {};
 
 const Bookmark = (props: Props) => {
   const { colors } = useTheme();
+  const user = useAppSelector((state: RootState) => state.user.user);
+
+  const [listRes, setListRes] = useState<IRestaurant[]>([]);
+
   const bookmark = true;
+
+  const fetchBookmarkRes = async () => {
+    const list: any = [];
+    const resArr: any = user?.bookmark.map(async (resId) => {
+      const resRef = doc(firebaseDb, "restaurants", resId);
+      const resSnap = await getDoc(resRef);
+      // TODO: remove id, it will added when created.
+      list.push({ ...resSnap.data(), id: resId });
+    });
+    await Promise.all(resArr);
+    setListRes(list);
+  };
+
+  useEffect(() => {
+    fetchBookmarkRes();
+  }, []);
   return (
     <Box flex={1} bgColor={"#fff"}>
       <Header.BasicHeader title="Đã lưu" />
-      {bookmark ? (
+      {listRes.length > 0 ? (
         <Box flex={1}>
           <VStack p={4} flex={1} space={4}>
-            <ItemCard />
-            <ItemCard />
-            <ItemCard />
-            <ItemCard />
+            {listRes.map((res) => (
+              <Box key={res.id}>
+                <ItemCard restaurant={res} />
+              </Box>
+            ))}
           </VStack>
         </Box>
       ) : (

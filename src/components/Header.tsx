@@ -5,7 +5,7 @@ import { Add, ArrowLeft2, Location, SearchNormal } from "iconsax-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 
-const HomeHeader = ({ name = "Jack 5M" }: any) => {
+const HomeHeader = ({ name = "Jack 5M", handleSearch }: any) => {
   const insets = useSafeAreaInsets();
   return (
     <Box
@@ -33,13 +33,13 @@ const HomeHeader = ({ name = "Jack 5M" }: any) => {
             />
           </Box>
         </HStack>
-        <SearchingBar />
+        <SearchingBar handleSearch={handleSearch} />
       </VStack>
     </Box>
   );
 };
 
-const SearchingBar = () => {
+const SearchingBar = ({ handleSearch }: any) => {
   const { colors } = useTheme();
   return (
     <Box mb={2}>
@@ -51,7 +51,7 @@ const SearchingBar = () => {
         placeholder="Tìm kiếm"
         placeholderTextColor={colors.muted[400]}
         InputLeftElement={
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleSearch}>
             <Icon
               as={<SearchNormal size="16" color={colors.muted[400]} />}
               size={5}

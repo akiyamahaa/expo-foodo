@@ -1,11 +1,33 @@
 import { StyleSheet } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, HStack, Text, VStack } from "native-base";
 import { Image } from "expo-image";
+import { ICommentForm } from "../type/restaurant";
+import { doc, getDoc } from "firebase/firestore";
+import { firebaseDb } from "../firebase";
+import { IUserProfile } from "../type/user";
+import { getDMY } from "../utils/utils";
 
-type Props = {};
+type Props = {
+  comments: ICommentForm;
+  userId: string;
+};
 
 const RestaurantComment = (props: Props) => {
+  const { comments } = props;
+  const [user, setUser] = useState<IUserProfile>();
+
+  const getUserFromId = async () => {
+    const userRef = doc(firebaseDb, "users", props.userId);
+    const userSnap = await getDoc(userRef);
+    const userData = userSnap.data() as any as IUserProfile;
+    setUser(userData);
+  };
+
+  useEffect(() => {
+    getUserFromId();
+  }, []);
+
   return (
     <VStack space={2}>
       <HStack alignItems={"center"} justifyContent={"space-between"}>
@@ -20,29 +42,32 @@ const RestaurantComment = (props: Props) => {
           </Box>
           <VStack>
             <Text fontWeight={500} fontSize={14}>
-              Charlie Siphron
+              {user?.fullname}
             </Text>
             <Text fontWeight={400} fontSize={12} color="coolGray.500">
-              26/08/23
+              {getDMY(comments.timestamp)}
             </Text>
           </VStack>
         </HStack>
         <Box>
           <Text fontWeight={700} fontSize={14} color="error.500">
-            7.1
+            {comments.avgRating}
           </Text>
         </Box>
       </HStack>
       <Box>
+        <Text fontWeight={700} fontSize={16}>
+          {comments.title}
+        </Text>
         <Text fontWeight={400} fontSize={14}>
-          Lorem ipsum dolor sit amet consectetur. Malesuada eget eu egestas
-          pellentesque suspendisse
+          {comments.content}
         </Text>
       </Box>
       <Box>
         <Image
-          source={require("../../assets/comment_res.png")}
-          style={{ height: 240, width: "100%" }}
+          source={{ uri: comments.imageUrl }}
+          alt={comments.imageName}
+          style={{ height: 240, width: "100%", borderRadius: 8 }}
         />
       </Box>
     </VStack>

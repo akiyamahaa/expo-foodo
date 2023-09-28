@@ -4,7 +4,7 @@ import { Box, IBoxProps } from "native-base";
 
 type Props = {
   children: ReactNode;
-  imageSource?: string;
+  imageSource?: any;
 } & IBoxProps;
 
 const BackgroundLayout = (props: Props) => {

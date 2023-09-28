@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ErrorOverlay from "../components/ErrorOverlay";
@@ -15,6 +15,15 @@ import Policy from "../screens/main/Policy";
 import NewPassword from "../screens/main/NewPassword";
 import CommentForm from "../screens/main/CommentForm";
 import Restaurant from "../screens/main/Restaurant";
+import * as Location from "expo-location";
+import { removeLoading, setLoading } from "../store/loading.reducer";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { firebaseDb } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { setUser } from "../store/user.reducer";
+import { IUserProfile } from "../type/user";
+import { setError } from "../store/error.reducer";
+import { setLocation } from "../store/location.reducer";
 
 const Stack = createNativeStackNavigator<RootStackParams>();
 
@@ -23,7 +32,48 @@ const Root = () => {
   const dispatch = useAppDispatch();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
-  console.log("🚀 ~ file: Root.tsx:23 ~ Root ~ user:", user);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        dispatch(
+          setError({
+            title: "Lỗi hệ thống",
+            message: "Permission to access location was denied",
+          })
+        );
+        return;
+      }
+
+      let location: any = await Location.getCurrentPositionAsync({});
+      dispatch(
+        setLocation({
+          lat: location.coords.latitude,
+          lng: location.coords.longitude,
+        })
+      );
+    })();
+  }, []);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      dispatch(setLoading());
+      const phone = await AsyncStorage.getItem("phone");
+      if (phone) {
+        const docRef = doc(firebaseDb, "users", phone);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const userProfile = { ...data };
+          await AsyncStorage.setItem("phone", phone);
+          dispatch(setUser(userProfile as IUserProfile));
+        }
+      }
+      dispatch(removeLoading());
+    };
+    fetchUser();
+  }, []);
 
   return (
     <Box

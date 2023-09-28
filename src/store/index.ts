@@ -4,15 +4,16 @@ import type { TypedUseSelectorHook } from "react-redux";
 import { errorReducer } from "./error.reducer";
 import { loadingReducer } from "./loading.reducer";
 import { userReducer } from "./user.reducer";
+import { locationReducer } from "./location.reducer";
 
 const store = configureStore({
   reducer: {
     error: errorReducer,
     loading: loadingReducer,
     user: userReducer,
+    location: locationReducer,
   },
 });
-// TODO: Make foodReducer to reuse 
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

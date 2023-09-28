@@ -6,16 +6,17 @@ type Props = {
   btnText: string;
   active?: boolean;
   handleBtn?: any;
+  disabled?: boolean;
 };
 
 const CustomButton = (props: Props) => {
-  const { btnText, active = true, handleBtn } = props;
+  const { btnText, active = true, handleBtn, disabled = false } = props;
   return (
-    <TouchableOpacity onPress={handleBtn}>
+    <TouchableOpacity onPress={handleBtn} disabled={disabled}>
       <Box
         width="100%"
         borderRadius={100}
-        bgColor={active ? "primary.600" : "muted.900"}
+        bgColor={active && !disabled ? "primary.600" : "muted.900"}
         p={3}
         borderColor={"primary.600"}
         borderWidth={1}

@@ -9,8 +9,12 @@ export type RootStackParams = {
   Setting: undefined;
   Policy: undefined;
   NewPassword: undefined;
-  CommentForm: undefined;
-  Restaurant: undefined;
+  CommentForm: {
+    id: string;
+  };
+  Restaurant: {
+    id: string;
+  };
 };
 export type BottomTabsParams = {
   Home: undefined;

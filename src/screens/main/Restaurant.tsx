@@ -1,5 +1,5 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Center,
@@ -23,47 +23,127 @@ import RestaurantComment from "../../components/RestaurantComment";
 import Header from "../../components/Header";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParams } from "../../navigations/config";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { firebaseDb } from "../../firebase";
+import { IComment, IRestaurant } from "../../type/restaurant";
+import { RootState, useAppSelector } from "../../store";
+import {
+  formatNumberToCurrency,
+  getStatus,
+  haversineDistance,
+} from "../../utils/utils";
 type Props = {} & NativeStackScreenProps<RootStackParams, "Restaurant">;
 
 const Restaurant = (props: Props) => {
-  const { navigation } = props;
+  const { navigation, route } = props;
+  const { id } = route.params;
   const { colors } = useTheme();
-  const handleBtnBack = () => {};
+  const [listComment, setListComment] = useState<IComment[]>([]);
+  const [isNotCommented, setIsNotCommented] = useState<boolean | null>(null);
+  const user = useAppSelector((state: RootState) => state.user.user);
+  const location = useAppSelector(
+    (state: RootState) => state.location.location
+  );
+  const isBookmarkRes = user?.bookmark.includes(id);
+
+  const [res, setRes] = useState<IRestaurant>();
+
+  const distanceUser = haversineDistance(
+    res?.lat || 0,
+    res?.lng || 0,
+    location?.lat!,
+    location?.lng!
+  );
+
+  const handleBookmarkRes = async () => {
+    if (user) {
+      let newFavourite;
+      // check isFavourite
+      if (isBookmarkRes) {
+        newFavourite = user.bookmark.filter((resId: string) => resId !== id);
+      } else {
+        newFavourite = [...user.bookmark, id];
+      }
+      const newUser = {
+        ...user,
+        bookmark: newFavourite,
+      };
+      await updateDoc(doc(firebaseDb, "users", user.phone), newUser);
+      navigation.navigate("TabNav");
+    }
+  };
+
+  useEffect(() => {
+    const fetchComment = async () => {
+      const q = query(
+        collection(firebaseDb, "comments"),
+        where("resId", "==", id)
+      );
+      const commentSnapShot = await getDocs(q);
+      const comments: IComment[] = [];
+      commentSnapShot.forEach((doc) => {
+        comments.push(doc.data() as any);
+      });
+      // check user comment
+      const check = comments.filter((cmt) => cmt.userId == user?.phone);
+      setIsNotCommented(!Boolean(check.length));
+      setListComment(comments);
+    };
+    const getInfoRestaurant = async () => {
+      const resRef = doc(firebaseDb, "restaurants", id);
+      const resSnap = await getDoc(resRef);
+      setRes(resSnap.data() as IRestaurant);
+    };
+    getInfoRestaurant();
+    fetchComment();
+  }, []);
+
   return (
     <Box flex={1} bgColor={"#fff"}>
       <Box height="350">
         <BackgroundLayout
-          imageSource={require("../../../assets/restaurant_image.png")}
+          imageSource={{
+            uri: res && res.image,
+          }}
         >
           <VStack flex={1} justifyContent={"space-between"}>
             <Header.BasicHeader
               bgColor="transparent"
               title=""
-              handleBtnBack={handleBtnBack}
+              handleBtnBack={() => navigation.goBack()}
             />
             <HStack px={5} pb={3} justifyContent={"space-between"}>
               <VStack space={2}>
                 <Box>
                   <Text fontSize={16} fontWeight={700} color="#fff">
-                    Cà Phê Ngon
+                    {res?.name}
                   </Text>
                 </Box>
                 <HStack space={1} alignItems={"center"}>
                   <Shop size="24" color="#fff" />
-                  <Text color="#fff">18 địa điểm cùng hệ thống</Text>
+                  {/* <Text color="#fff">18 địa điểm cùng hệ thống</Text> */}
                 </HStack>
               </VStack>
               <VStack justifyContent={"space-between"}>
                 <Text
                   textTransform={"uppercase"}
-                  fontWeight={500}
-                  fontSize={12}
+                  fontWeight={700}
+                  fontSize={14}
                   color="green.600"
+                  shadow={6}
                 >
-                  Đang mở cửa
+                  {getStatus(res?.time.open!, res?.time.close!)}
                 </Text>
-                <Text fontSize={12} fontWeight={400} color="#fff">
-                  09:00 - 22:30
+                <Text fontSize={13} fontWeight={400} color="#fff">
+                  {res?.time.open} - {res?.time.close}
                 </Text>
               </VStack>
             </HStack>
@@ -79,38 +159,48 @@ const Restaurant = (props: Props) => {
         <HStack alignItems={"center"} space={1}>
           <Location size="20" color={colors.coolGray[500]} />
           <Text color={"coolGray.500"} fontWeight={400} fontSize={14}>
-            539 Lĩnh Nam, P.Lĩnh Nam, Q.Hoàng Mai, Hà Nội
+            {res?.address}
           </Text>
         </HStack>
         <HStack alignItems={"center"} space={1}>
           <Gps size="20" color={colors.coolGray[500]} />
           <Text color={"primary.600"} fontWeight={500} fontSize={14}>
-            2,5 Km
+            {distanceUser.toFixed(2)} km
           </Text>
         </HStack>
         <HStack alignItems={"center"} space={1}>
           <Bag2 size="20" color={colors.coolGray[500]} />
           <Text color={"coolGray.500"} fontWeight={400} fontSize={14}>
-            Cafe/Dessert - Món Việt
+            {res?.category.toString()}
           </Text>
         </HStack>
         <HStack justifyContent={"space-between"}>
           <HStack alignItems={"center"} space={1}>
             <DollarCircle size="20" color={colors.coolGray[500]} />
             <Text color={"coolGray.500"} fontWeight={400} fontSize={14}>
-              30,000đ - 60,000đ
+              {formatNumberToCurrency(res?.price.min || 0, "đ")} -{" "}
+              {formatNumberToCurrency(res?.price.max || 0, "đ")}
             </Text>
           </HStack>
           <HStack space={2} alignItems={"center"}>
-            <TouchableOpacity
-              onPress={() => {
-                navigation.navigate("CommentForm");
-              }}
-            >
-              <Messages3 size="24" color="#FF8A65" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate("TabNav")}>
-              <Bookmark size="24" color="#FF8A65" />
+            {isNotCommented && (
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate("CommentForm", {
+                    id: id,
+                  });
+                }}
+              >
+                <Messages3 size="24" color={colors.coolGray[500]} />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={handleBookmarkRes}>
+              <Bookmark
+                size="24"
+                color={
+                  isBookmarkRes ? colors.primary[600] : colors.coolGray[500]
+                }
+              />
             </TouchableOpacity>
             <Center size="8" borderRadius={100} bgColor={"primary.600"}>
               <Text fontWeight={700} fontSize={14} color="#fff">
@@ -122,9 +212,14 @@ const Restaurant = (props: Props) => {
       </VStack>
       <ScrollView>
         <VStack p={4} space={4}>
-          <RestaurantComment />
-          <RestaurantComment />
-          <RestaurantComment />
+          {listComment.map((comments) => (
+            <Box key={comments.id}>
+              <RestaurantComment
+                comments={comments.comment}
+                userId={comments.userId}
+              />
+            </Box>
+          ))}
         </VStack>
       </ScrollView>
     </Box>

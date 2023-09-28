@@ -48,6 +48,7 @@ const PostAuth = (props: Props) => {
         password,
         ...formData,
         birthday: formData.birthday.toISOString(),
+        bookmark: [],
       };
       await setDoc(newDoc, docData);
       dispatch(setUser(docData));
