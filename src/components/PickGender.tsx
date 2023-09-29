@@ -5,9 +5,10 @@ import { Box, Center, HStack, Text } from "native-base";
 type PickGenderProps = {
   gender: any;
   setGender: any;
+  disabled?: boolean
 };
 
-const PickGender = ({ gender, setGender }: PickGenderProps) => {
+const PickGender = ({ gender, setGender, disabled = false }: PickGenderProps) => {
   const genderArr = [
     {
       gen: "M",
@@ -33,6 +34,7 @@ const PickGender = ({ gender, setGender }: PickGenderProps) => {
             style={{ flex: 1 }}
             onPress={() => setGender(elm.gen)}
             key={elm.gen}
+            disabled={disabled}
           >
             <Center
               bgColor={elm.gen == gender ? "primary.600" : "transparent"}

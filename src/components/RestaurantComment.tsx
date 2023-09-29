@@ -66,7 +66,9 @@ const RestaurantComment = (props: Props) => {
           <Box size={12} borderRadius={100} overflow={"hidden"}>
             <Image
               source={{
-                uri: "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Yasuo_0.jpg",
+                uri:
+                  user?.avatarUrl ||
+                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgc2u0F9JdscSSIM4LH0ca2FLNgVS-vat7LSZKFb73azHEfhVfW7vwnFaq5bidMl1_tsg&usqp=CAU",
               }}
               style={{ width: 48, height: 48 }}
             />

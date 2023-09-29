@@ -24,6 +24,9 @@ import { setUser } from "../store/user.reducer";
 import { IUserProfile } from "../type/user";
 import { setError } from "../store/error.reducer";
 import { setLocation } from "../store/location.reducer";
+import UserInfo from "../screens/main/UserInfo";
+import ChangePassword from "../screens/main/ChangePassword";
+import ChangeAvatar from "../screens/main/ChangeAvatar";
 
 const Stack = createNativeStackNavigator<RootStackParams>();
 
@@ -97,7 +100,10 @@ const Root = () => {
           {user && (
             <Stack.Group>
               <Stack.Screen name="TabNav" component={TabNav} />
+              <Stack.Screen name="Password" component={ChangePassword} />
+              <Stack.Screen name="ChangeAvatar" component={ChangeAvatar} />
               <Stack.Screen name="Policy" component={Policy} />
+              <Stack.Screen name="UserInfo" component={UserInfo} />
               <Stack.Screen name="NewPassword" component={NewPassword} />
               <Stack.Screen name="CommentForm" component={CommentForm} />
               <Stack.Screen name="Restaurant" component={Restaurant} />

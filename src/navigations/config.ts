@@ -8,7 +8,10 @@ export type RootStackParams = {
   BMI: undefined;
   Setting: undefined;
   Policy: undefined;
+  UserInfo: undefined;
   NewPassword: undefined;
+  Password: undefined;
+  ChangeAvatar: undefined;
   CommentForm: {
     id: string;
   };

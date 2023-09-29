@@ -1,13 +1,6 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
 import React from "react";
-import {
-  Avatar,
-  Box,
-  HStack,
-  Text,
-  VStack,
-  useTheme,
-} from "native-base";
+import { Avatar, Box, HStack, Text, VStack, useTheme } from "native-base";
 import {
   ArrowRight2,
   InfoCircle,
@@ -17,32 +10,34 @@ import {
 import Header from "../../components/Header";
 import CustomButton from "../../components/CustomButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAppDispatch } from "../../store";
+import { RootState, useAppDispatch, useAppSelector } from "../../store";
 import { removeUser } from "../../store/user.reducer";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParams } from "../../navigations/config";
+import { useNavigation } from "@react-navigation/native";
 
 type Props = {} & NativeStackScreenProps<RootStackParams, "TabNav">;
 
 const BoxInfo = ({ type }: { type: string }) => {
+  const navigation = useNavigation<any>();
   const { colors } = useTheme();
-  let title, IconTag ;
-  if (type == "password") {
+  let title, IconTag;
+  if (type == "Password") {
     title = "Mật khẩu";
     IconTag = <Lock size="32" color={colors.coolGray[500]} variant="Bold" />;
-  } else if (type == "info") {
+  } else if (type == "UserInfo") {
     title = "Thông tin";
     IconTag = (
       <InfoCircle size="32" color={colors.coolGray[500]} variant="Bold" />
     );
-  } else if (type == "policy") {
+  } else if (type == "Policy") {
     title = "Chính sách bảo mật";
     IconTag = (
       <MessageQuestion size="32" color={colors.coolGray[500]} variant="Bold" />
     );
   }
   return (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={() => navigation.navigate(type)}>
       <HStack alignItems={"center"} justifyContent={"space-between"}>
         <HStack space={3} alignItems={"center"} py={4}>
           {IconTag}
@@ -61,30 +56,33 @@ const BoxInfo = ({ type }: { type: string }) => {
 const Profile = (props: Props) => {
   const { navigation } = props;
   const { colors } = useTheme();
+  const user = useAppSelector((state: RootState) => state.user.user);
   const dispatch = useAppDispatch();
-  const type = ["password", "info", "policy"];
+  const type = ["Password", "UserInfo", "Policy"];
 
   const handleLogout = async () => {
     await AsyncStorage.clear();
     dispatch(removeUser());
   };
 
-  const handlePolicy = () => {
-    navigation.navigate('Policy')
-  }
+  const handleAvatar = () => {
+    navigation.navigate("ChangeAvatar");
+  };
   return (
     <Box flex={1} bgColor={"#fff"}>
       <Header.BasicHeader title="Cá nhân" />
       <VStack flex={1} px={4} py={6} justifyContent={"space-between"}>
         <VStack space={4}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleAvatar}>
             <Box p={3} borderRadius={16} bgColor={"coolGray.100"}>
               <HStack alignItems={"center"} justifyContent={"space-between"}>
                 <HStack alignItems={"center"} space={4}>
                   <Avatar
                     size="12"
                     source={{
-                      uri: "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Yasuo_0.jpg",
+                      uri:
+                        user?.avatarUrl ||
+                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgc2u0F9JdscSSIM4LH0ca2FLNgVS-vat7LSZKFb73azHEfhVfW7vwnFaq5bidMl1_tsg&usqp=CAU",
                     }}
                   />
                   <Box>
