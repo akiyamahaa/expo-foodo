@@ -34,18 +34,20 @@ import {
 } from "firebase/firestore";
 import { firebaseDb } from "../../firebase";
 import { IComment, IRestaurant } from "../../type/restaurant";
-import { RootState, useAppSelector } from "../../store";
+import { RootState, useAppDispatch, useAppSelector } from "../../store";
 import {
   formatNumberToCurrency,
   getStatus,
   haversineDistance,
 } from "../../utils/utils";
+import { removeLoading, setLoading } from "../../store/loading.reducer";
 type Props = {} & NativeStackScreenProps<RootStackParams, "Restaurant">;
 
 const Restaurant = (props: Props) => {
   const { navigation, route } = props;
   const { id } = route.params;
   const { colors } = useTheme();
+  const dispatch = useAppDispatch();
   const [listComment, setListComment] = useState<IComment[]>([]);
   const [isNotCommented, setIsNotCommented] = useState<boolean | null>(null);
   const user = useAppSelector((state: RootState) => state.user.user);
@@ -77,7 +79,7 @@ const Restaurant = (props: Props) => {
         bookmark: newFavourite,
       };
       await updateDoc(doc(firebaseDb, "users", user.phone), newUser);
-      navigation.navigate("TabNav");
+      // navigation.navigate("TabNav");
     }
   };
 
@@ -98,9 +100,16 @@ const Restaurant = (props: Props) => {
       setListComment(comments);
     };
     const getInfoRestaurant = async () => {
-      const resRef = doc(firebaseDb, "restaurants", id);
-      const resSnap = await getDoc(resRef);
-      setRes(resSnap.data() as IRestaurant);
+      try {
+        dispatch(setLoading());
+        const resRef = doc(firebaseDb, "restaurants", id);
+        const resSnap = await getDoc(resRef);
+        setRes(resSnap.data() as IRestaurant);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        dispatch(removeLoading());
+      }
     };
     getInfoRestaurant();
     fetchComment();
@@ -171,7 +180,7 @@ const Restaurant = (props: Props) => {
         <HStack alignItems={"center"} space={1}>
           <Bag2 size="20" color={colors.coolGray[500]} />
           <Text color={"coolGray.500"} fontWeight={400} fontSize={14}>
-            {res?.category.toString()}
+            {res?.category.toString().replace(",", " - ")}
           </Text>
         </HStack>
         <HStack justifyContent={"space-between"}>
@@ -214,10 +223,7 @@ const Restaurant = (props: Props) => {
         <VStack p={4} space={4}>
           {listComment.map((comments) => (
             <Box key={comments.id}>
-              <RestaurantComment
-                comments={comments.comment}
-                userId={comments.userId}
-              />
+              <RestaurantComment comments={comments} />
             </Box>
           ))}
         </VStack>

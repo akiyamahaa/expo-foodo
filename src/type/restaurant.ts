@@ -23,11 +23,6 @@ export interface IComment {
   userId: string;
   comment: ICommentForm;
 }
-export interface IRateComment {
-  id: string;
-  commentId: string;
-  userId: string;
-}
 
 export interface ICommentForm {
   title: string;
@@ -36,6 +31,9 @@ export interface ICommentForm {
   imageUrl: string;
   imageName: string;
   timestamp: Date;
+  vote: {
+    [userId: string]: -1 | 1;
+  };
 }
 
 export interface IRating {

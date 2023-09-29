@@ -17,8 +17,6 @@ const Bookmark = (props: Props) => {
 
   const [listRes, setListRes] = useState<IRestaurant[]>([]);
 
-  const bookmark = true;
-
   const fetchBookmarkRes = async () => {
     const list: any = [];
     const resArr: any = user?.bookmark.map(async (resId) => {

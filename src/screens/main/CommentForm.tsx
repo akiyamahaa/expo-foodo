@@ -94,6 +94,7 @@ const CommentForm = (props: Props) => {
           imageUrl: avatarUrl,
           imageName: avatarName,
           timestamp: new Date(),
+          vote: {},
         },
       };
       const commentDocRef = doc(collection(firebaseDb, "comments"));
