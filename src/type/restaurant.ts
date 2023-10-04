@@ -8,6 +8,7 @@ export interface IRestaurant {
   lat: number;
   lng: number;
   category: string[];
+  district: string;
   price: {
     min: number;
     max: number;

@@ -8,6 +8,7 @@ import { RootState, useAppSelector } from "../store";
 
 import { useNavigation } from "@react-navigation/native";
 import { haversineDistance } from "../utils/utils";
+import { DistrictName } from "../data/utils";
 
 type Props = {
   restaurant: IRestaurant;
@@ -49,7 +50,8 @@ const ItemCard = (props: Props) => {
             <HStack alignItems={"center"} space={2}>
               <Location size="16" color={colors.coolGray[500]} />
               <Text fontSize={12} fontWeight={400} color={colors.coolGray[500]}>
-                {distanceUser.toFixed(2)} Km
+                {DistrictName(restaurant.district)} - {distanceUser.toFixed(2)}{" "}
+                Km
               </Text>
             </HStack>
             <HStack alignItems={"center"} space={1}>

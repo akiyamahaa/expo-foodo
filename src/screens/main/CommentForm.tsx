@@ -1,16 +1,6 @@
 import { StyleSheet } from "react-native";
-import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Center,
-  HStack,
-  Input,
-  Slider,
-  Text,
-  TextArea,
-  VStack,
-  useTheme,
-} from "native-base";
+import React, { useState } from "react";
+import { Box, Center, Input, TextArea, VStack, useTheme } from "native-base";
 import Header from "../../components/Header";
 import CustomButton from "../../components/CustomButton";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";

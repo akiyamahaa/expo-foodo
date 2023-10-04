@@ -1,16 +1,22 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
 import React from "react";
-import { Box, Text } from "native-base";
+import { Box, Text, IBoxProps } from "native-base";
 
 type Props = {
   btnText: string;
   active?: boolean;
   handleBtn?: any;
   disabled?: boolean;
-};
+} & IBoxProps;
 
 const CustomButton = (props: Props) => {
-  const { btnText, active = true, handleBtn, disabled = false } = props;
+  const {
+    btnText,
+    active = true,
+    handleBtn,
+    disabled = false,
+    ...boxProps
+  } = props;
   return (
     <TouchableOpacity onPress={handleBtn} disabled={disabled}>
       <Box
@@ -22,6 +28,7 @@ const CustomButton = (props: Props) => {
         borderWidth={1}
         alignItems={"center"}
         justifyContent={"center"}
+        {...boxProps}
       >
         <Text
           fontWeight={500}

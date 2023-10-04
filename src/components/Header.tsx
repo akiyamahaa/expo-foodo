@@ -1,11 +1,21 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { Box, HStack, Icon, Input, Text, VStack, useTheme } from "native-base";
-import { Add, ArrowLeft2, Location, SearchNormal } from "iconsax-react-native";
+import {
+  Add,
+  ArrowLeft2,
+  FilterSearch,
+  Location,
+  SearchNormal,
+} from "iconsax-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 
-const HomeHeader = ({ name = "Jack 5M", handleSearch }: any) => {
+const HomeHeader = ({
+  name = "Jack 5M",
+  handleSearch,
+  handleFilter = () => {},
+}: any) => {
   const insets = useSafeAreaInsets();
   return (
     <Box
@@ -16,14 +26,16 @@ const HomeHeader = ({ name = "Jack 5M", handleSearch }: any) => {
     >
       <VStack space={2}>
         <HStack alignItems={"center"} justifyContent={"space-between"}>
-          <HStack space={1}>
-            <Box>
-              <Location size="24" color="#fff" />
-            </Box>
-            <Text fontSize={16} color="#fff">
-              Hà nội
-            </Text>
-          </HStack>
+          <TouchableOpacity onPress={handleFilter}>
+            <HStack space={1}>
+              <Box>
+                <FilterSearch size="24" color="#fff" />
+              </Box>
+              <Text fontSize={16} color="#fff">
+                Bộ lọc
+              </Text>
+            </HStack>
+          </TouchableOpacity>
           <Box size={8} borderRadius={100} overflow={"hidden"}>
             <Image
               source={{
@@ -41,9 +53,12 @@ const HomeHeader = ({ name = "Jack 5M", handleSearch }: any) => {
 
 const SearchingBar = ({ handleSearch }: any) => {
   const { colors } = useTheme();
+  const [textSearch, setTextSearch] = useState("");
   return (
     <Box mb={2}>
       <Input
+        value={textSearch}
+        onChangeText={setTextSearch}
         backgroundColor={"#fff"}
         borderRadius={100}
         px={1.5}
@@ -51,7 +66,7 @@ const SearchingBar = ({ handleSearch }: any) => {
         placeholder="Tìm kiếm"
         placeholderTextColor={colors.muted[400]}
         InputLeftElement={
-          <TouchableOpacity onPress={handleSearch}>
+          <TouchableOpacity onPress={() => handleSearch(textSearch)}>
             <Icon
               as={<SearchNormal size="16" color={colors.muted[400]} />}
               size={5}
