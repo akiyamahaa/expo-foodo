@@ -1,5 +1,3 @@
-import { number } from "yup";
-
 export interface IRestaurant {
   id?: string;
   name: string;
@@ -8,7 +6,7 @@ export interface IRestaurant {
   lat: number;
   lng: number;
   category: string[];
-  district: string;
+  district?: string;
   price: {
     min: number;
     max: number;

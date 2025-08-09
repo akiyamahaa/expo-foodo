@@ -8,7 +8,7 @@ export enum EDistrict {
   LongBien = "6",
   TayHo = "7",
 }
-export const DistrictName = (districtId: string) => {
+export const DistrictName = (districtId?: string) => {
   switch (districtId) {
     case "0":
       return "Quận Ba Đình";

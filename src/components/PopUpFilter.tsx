@@ -11,8 +11,8 @@ import {
 } from "native-base";
 import { CloseSquare } from "iconsax-react-native";
 import CustomSelect from "./CustomSelect";
-import { selectCategory, selectDistrict } from "../data/utils";
 import CustomButton from "./CustomButton";
+import { selectCategory, selectDistrict } from "../firebase/data/utils";
 
 type Props = {
   showModal: boolean;

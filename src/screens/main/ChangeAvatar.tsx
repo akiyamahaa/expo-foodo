@@ -10,11 +10,11 @@ import * as ImagePicker from "expo-image-picker";
 import { removeLoading, setLoading } from "../../store/loading.reducer";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Camera } from "iconsax-react-native";
-import { uploadImage } from "../../data/mockup";
 import { doc, updateDoc } from "firebase/firestore";
 import { firebaseDb } from "../../firebase";
 import CustomButton from "../../components/CustomButton";
 import { setUser } from "../../store/user.reducer";
+import { uploadImage } from "../../firebase/data/mockup";
 
 type Props = {} & NativeStackScreenProps<RootStackParams, "ChangeAvatar">;
 

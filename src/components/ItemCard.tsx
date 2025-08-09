@@ -8,7 +8,7 @@ import { RootState, useAppSelector } from "../store";
 
 import { useNavigation } from "@react-navigation/native";
 import { haversineDistance } from "../utils/utils";
-import { DistrictName } from "../data/utils";
+import { DistrictName } from "../firebase/data/utils";
 
 type Props = {
   restaurant: IRestaurant;

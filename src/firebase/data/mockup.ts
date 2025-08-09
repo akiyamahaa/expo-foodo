@@ -1,8 +1,8 @@
 import { collection, doc, setDoc } from "firebase/firestore";
 import uuid from "react-native-uuid";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { firebaseDb, firebaseStorage } from "../firebase";
-import { IRestaurant } from "../type/restaurant";
+import { IRestaurant } from "../../type/restaurant";
+import { firebaseDb, firebaseStorage } from "..";
 
 const restaurantSample: IRestaurant[] = [
   {

@@ -12,10 +12,10 @@ import { RootState, useAppDispatch, useAppSelector } from "../../store";
 import { removeLoading, setLoading } from "../../store/loading.reducer";
 import { Camera } from "iconsax-react-native";
 import RatingGroup from "../../components/RatingGroup";
-import { uploadImage } from "../../data/mockup";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { firebaseDb } from "../../firebase";
 import { IComment } from "../../type/restaurant";
+import { uploadImage } from "../../firebase/data/mockup";
 
 type Props = {} & NativeStackScreenProps<RootStackParams, "CommentForm">;
 
