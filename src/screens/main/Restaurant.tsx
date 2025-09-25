@@ -41,6 +41,10 @@ import {
   haversineDistance,
 } from "../../utils/utils";
 import { removeLoading, setLoading } from "../../store/loading.reducer";
+import { setUser } from "../../store/user.reducer";
+import { Ionicons } from "@expo/vector-icons";
+import { useIsFocused } from "@react-navigation/native";
+import { selectCategory } from "../../data/utils";
 type Props = {} & NativeStackScreenProps<RootStackParams, "Restaurant">;
 
 const Restaurant = (props: Props) => {
@@ -50,13 +54,17 @@ const Restaurant = (props: Props) => {
   const dispatch = useAppDispatch();
   const [listComment, setListComment] = useState<IComment[]>([]);
   const [isNotCommented, setIsNotCommented] = useState<boolean | null>(null);
+  const [rating, setRating] = useState(0);
   const user = useAppSelector((state: RootState) => state.user.user);
   const location = useAppSelector(
     (state: RootState) => state.location.location
   );
   const isBookmarkRes = user?.bookmark.includes(id);
 
-  const [res, setRes] = useState<IRestaurant>();
+  const isFocused = useIsFocused();
+
+  const [res, setRes] = useState<IRestaurant | any>();
+  const [textLen, setTextLen] = useState(10);
 
   const distanceUser = haversineDistance(
     res?.lat || 0,
@@ -66,20 +74,32 @@ const Restaurant = (props: Props) => {
   );
 
   const handleBookmarkRes = async () => {
-    if (user) {
-      let newFavourite;
-      // check isFavourite
-      if (isBookmarkRes) {
-        newFavourite = user.bookmark.filter((resId: string) => resId !== id);
-      } else {
-        newFavourite = [...user.bookmark, id];
+    dispatch(setLoading());
+    try {
+      if (user) {
+        let newFavourite;
+        // check isFavourite
+        if (isBookmarkRes) {
+          newFavourite = user.bookmark.filter((resId: string) => resId !== id);
+        } else {
+          newFavourite = [...user.bookmark, id];
+        }
+        // console.log(newFavourite);
+
+        const newUser = {
+          ...user,
+          bookmark: newFavourite,
+        };
+
+        dispatch(setUser(newUser));
+
+        await updateDoc(doc(firebaseDb, "users", user.phone), newUser);
+        // navigation.navigate("TabNav");
       }
-      const newUser = {
-        ...user,
-        bookmark: newFavourite,
-      };
-      await updateDoc(doc(firebaseDb, "users", user.phone), newUser);
-      // navigation.navigate("TabNav");
+    } catch (err) {
+      console.log(err);
+    } finally {
+      dispatch(removeLoading());
     }
   };
 
@@ -98,6 +118,13 @@ const Restaurant = (props: Props) => {
       const check = comments.filter((cmt) => cmt.userId == user?.phone);
       setIsNotCommented(!Boolean(check.length));
       setListComment(comments);
+
+      // Calculate Average Rating
+      const averageRating =
+        comments.reduce((total, curComment) => {
+          return total + curComment.comment.avgRating;
+        }, 0) / comments.length;
+      setRating(averageRating || 0);
     };
     const getInfoRestaurant = async () => {
       try {
@@ -105,6 +132,7 @@ const Restaurant = (props: Props) => {
         const resRef = doc(firebaseDb, "restaurants", id);
         const resSnap = await getDoc(resRef);
         setRes(resSnap.data() as IRestaurant);
+        setTextLen(resSnap.data()!.name.length);
       } catch (err) {
         console.log(err);
       } finally {
@@ -113,11 +141,11 @@ const Restaurant = (props: Props) => {
     };
     getInfoRestaurant();
     fetchComment();
-  }, []);
+  }, [isFocused]);
 
   return (
     <Box flex={1} bgColor={"#fff"}>
-      <Box height="350">
+      <Box height="240">
         <BackgroundLayout
           imageSource={{
             uri: res && res.image,
@@ -130,29 +158,33 @@ const Restaurant = (props: Props) => {
               handleBtnBack={() => navigation.goBack()}
             />
             <HStack px={5} pb={3} justifyContent={"space-between"}>
-              <VStack space={2}>
-                <Box>
-                  <Text fontSize={16} fontWeight={700} color="#fff">
-                    {res?.name}
-                  </Text>
-                </Box>
-                <HStack space={1} alignItems={"center"}>
-                  <Shop size="24" color="#fff" />
-                  {/* <Text color="#fff">18 địa điểm cùng hệ thống</Text> */}
-                </HStack>
+              <VStack space={2} style={{ alignSelf: "center", flex: 1 }}>
+                <Text
+                  fontSize={textLen < 30 ? 20 : 16}
+                  fontWeight={700}
+                  color="#fff"
+                  paddingRight={8}
+                >
+                  {res?.name}
+                </Text>
               </VStack>
-              <VStack justifyContent={"space-between"}>
+              <VStack justifyContent={"flex-end"}>
                 <Text
                   textTransform={"uppercase"}
                   fontWeight={700}
                   fontSize={14}
-                  color="green.600"
+                  color={
+                    getStatus(res?.time?.open, res?.time?.close) ==
+                    "Đã đóng cửa"
+                      ? "red.600"
+                      : "green.600"
+                  }
                   shadow={6}
                 >
-                  {getStatus(res?.time.open!, res?.time.close!)}
+                  {getStatus(res?.time?.open, res?.time?.close)}
                 </Text>
                 <Text fontSize={13} fontWeight={400} color="#fff">
-                  {res?.time.open} - {res?.time.close}
+                  {res?.time?.open} - {res?.time?.close}
                 </Text>
               </VStack>
             </HStack>
@@ -167,7 +199,12 @@ const Restaurant = (props: Props) => {
       >
         <HStack alignItems={"center"} space={1}>
           <Location size="20" color={colors.coolGray[500]} />
-          <Text color={"coolGray.500"} fontWeight={400} fontSize={14}>
+          <Text
+            color={"coolGray.500"}
+            fontWeight={400}
+            fontSize={14}
+            paddingRight={8}
+          >
             {res?.address}
           </Text>
         </HStack>
@@ -180,7 +217,10 @@ const Restaurant = (props: Props) => {
         <HStack alignItems={"center"} space={1}>
           <Bag2 size="20" color={colors.coolGray[500]} />
           <Text color={"coolGray.500"} fontWeight={400} fontSize={14}>
-            {res?.category.toString().replace(",", " - ")}
+            {res?.category
+              .map((cat: any) => selectCategory[cat].label)
+              .toString()
+              .replaceAll(",", " - ")}
           </Text>
         </HStack>
         <HStack justifyContent={"space-between"}>
@@ -197,15 +237,25 @@ const Restaurant = (props: Props) => {
                 onPress={() => {
                   navigation.navigate("CommentForm", {
                     id: id,
+                    // restaurant: {
+                    //   ...res,
+                    //   rating: rating || 0,
+                    //   commentCount: listComment.length || 0,
+                    // },
                   });
                 }}
               >
                 <Messages3 size="24" color={colors.coolGray[500]} />
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={handleBookmarkRes}>
-              <Bookmark
-                size="24"
+            <TouchableOpacity
+              onPress={() => {
+                handleBookmarkRes();
+              }}
+            >
+              <Ionicons
+                name={isBookmarkRes ? "bookmark" : "bookmark-outline"}
+                size={24}
                 color={
                   isBookmarkRes ? colors.primary[600] : colors.coolGray[500]
                 }
@@ -213,7 +263,7 @@ const Restaurant = (props: Props) => {
             </TouchableOpacity>
             <Center size="8" borderRadius={100} bgColor={"primary.600"}>
               <Text fontWeight={700} fontSize={14} color="#fff">
-                7.2
+                {rating.toFixed(1)}
               </Text>
             </Center>
           </HStack>

@@ -1,5 +1,6 @@
-import { StyleSheet, TouchableOpacity, View } from "react-native";
-import React, { useEffect, useState } from "react";
+// src/components/PopUpFilter.tsx
+import { StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
 import {
   Box,
   Text,
@@ -10,19 +11,18 @@ import {
   HStack,
 } from "native-base";
 import { CloseSquare } from "iconsax-react-native";
-import CustomSelect from "./CustomSelect";
+import CustomSelect from "./CustomSelect"; // (bản mới ở dưới)
 import CustomButton from "./CustomButton";
 import { selectCategory, selectDistrict } from "../firebase/data/utils";
 
 type Props = {
   showModal: boolean;
-  setShowModal: any;
-  handleBtn: any;
+  setShowModal: (v: boolean) => void;
+  handleBtn: (district: string, category: string) => void;
 };
 
-const PopUpFilter = (props: Props) => {
+const PopUpFilter = ({ showModal, setShowModal, handleBtn }: Props) => {
   const { colors } = useTheme();
-  const { showModal, setShowModal, handleBtn } = props;
   const [district, setDistrict] = useState("");
   const [category, setCategory] = useState("");
 
@@ -33,40 +33,39 @@ const PopUpFilter = (props: Props) => {
 
   return (
     <Center>
-      <Modal isOpen={showModal} onClose={() => {}} size={"md"}>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="md">
         <Modal.Content>
-          <Modal.Body>
-            <VStack px={4}>
-              <HStack
-                alignItems={"center"}
-                justifyContent={"space-between"}
-                mb={8}
-              >
-                <Text fontWeight={700} fontSize={20} color={"primary.600"}>
+          {/* DÙNG Box thay cho Modal.Body để tránh ScrollView */}
+          <Box px={4} py={4}>
+            <VStack>
+              <HStack alignItems="center" justifyContent="space-between" mb={8}>
+                <Text fontWeight={700} fontSize={20} color="primary.600">
                   Bộ lọc
                 </Text>
                 <TouchableOpacity onPress={() => setShowModal(false)}>
                   <CloseSquare size="32" color="#373737" />
                 </TouchableOpacity>
               </HStack>
+
               <VStack space={8}>
-                <VStack space={2}>
+                <VStack space={4}>
                   <CustomSelect
                     label="Khu vực"
                     placeholder="Quận"
                     value={district}
-                    setValue={setDistrict}
-                    selectData={selectDistrict}
+                    onChange={setDistrict}
+                    options={selectDistrict}
                   />
                   <CustomSelect
                     label="Ẩm thực"
                     placeholder="Chọn loại"
                     value={category}
-                    setValue={setCategory}
-                    selectData={selectCategory}
+                    onChange={setCategory}
+                    options={selectCategory}
                   />
                 </VStack>
-                <HStack justifyContent={"space-between"} space={4}>
+
+                <HStack justifyContent="space-between" space={4}>
                   <Box flex={1}>
                     <CustomButton
                       btnText="Lọc"
@@ -77,15 +76,15 @@ const PopUpFilter = (props: Props) => {
                     <CustomButton
                       btnText="Hủy lọc"
                       handleBtn={handleCancelFilter}
-                      background={"#fff"}
-                      color={"red.100"}
+                      background="#fff"
+                      color="red.100"
                       active={false}
                     />
                   </Box>
                 </HStack>
               </VStack>
             </VStack>
-          </Modal.Body>
+          </Box>
         </Modal.Content>
       </Modal>
     </Center>
