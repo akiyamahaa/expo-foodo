@@ -14,7 +14,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { firebaseDb } from "../../firebase";
 import CustomButton from "../../components/CustomButton";
 import { setUser } from "../../store/user.reducer";
-import { uploadImage } from "../../firebase/data/mockup";
+import { uploadImage } from "../../data/mockup";
 
 type Props = {} & NativeStackScreenProps<RootStackParams, "ChangeAvatar">;
 

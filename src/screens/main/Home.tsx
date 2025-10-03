@@ -14,7 +14,7 @@ import PopUpFilter from "../../components/PopUpFilter";
 
 type Props = {} & NativeStackScreenProps<RootStackParams, "TabNav">;
 
-const Home = (props: Props) => {
+const Home = ({}: Props) => {
   const [listRes, setListRes] = useState<IRestaurant[]>([]);
   const [allRes, setAllRes] = useState<IRestaurant[]>([]);
   const [showModal, setShowModal] = useState(false);

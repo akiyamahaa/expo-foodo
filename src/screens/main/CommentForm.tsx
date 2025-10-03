@@ -15,7 +15,7 @@ import RatingGroup from "../../components/RatingGroup";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { firebaseDb } from "../../firebase";
 import { IComment } from "../../type/restaurant";
-import { uploadImage } from "../../firebase/data/mockup";
+import { uploadImage } from "../../data/mockup";
 
 type Props = {} & NativeStackScreenProps<RootStackParams, "CommentForm">;
 

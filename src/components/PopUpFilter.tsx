@@ -13,7 +13,7 @@ import {
 import { CloseSquare } from "iconsax-react-native";
 import CustomSelect from "./CustomSelect"; // (bản mới ở dưới)
 import CustomButton from "./CustomButton";
-import { selectCategory, selectDistrict } from "../firebase/data/utils";
+import { selectCategory, selectDistrict } from "../data/utils";
 
 type Props = {
   showModal: boolean;
