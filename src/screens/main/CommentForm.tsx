@@ -1,5 +1,5 @@
 import { StyleSheet, Platform } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   Center,
@@ -24,8 +24,8 @@ import RatingGroup from "../../components/RatingGroup";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { firebaseDb } from "../../firebase";
 import { IComment } from "../../type/restaurant";
-import { uploadImage } from "../../data/mockup";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ensureSmallImage, uploadImage } from "../../utils/image";
 
 type Props = {} & NativeStackScreenProps<RootStackParams, "CommentForm">;
 
@@ -78,8 +78,17 @@ const CommentForm = (props: Props) => {
     }
   };
 
+  const submittingRef = useRef(false);
+  useEffect(
+    () => () => {
+      submittingRef.current = false;
+    },
+    []
+  );
+
   const handleAddComment = async () => {
-    if (!image) return;
+    if (!image || submittingRef.current) return;
+    submittingRef.current = true;
     dispatch(setLoading());
     try {
       const avgRating = Number(
@@ -88,8 +97,11 @@ const CommentForm = (props: Props) => {
           .toFixed(1)
       );
 
+      // 🔒 Resize/nén trước khi upload
+      const safeUri = await ensureSmallImage(image);
+
       const { avatarName, avatarUrl } = await uploadImage(
-        image,
+        safeUri,
         `comments/${id}`
       );
 
@@ -112,7 +124,9 @@ const CommentForm = (props: Props) => {
       navigation.goBack();
     } catch (err) {
       console.log("upload/comment error:", err);
+      // bạn có thể hiện Toast ở đây
     } finally {
+      submittingRef.current = false;
       dispatch(removeLoading());
     }
   };

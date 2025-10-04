@@ -1,5 +1,4 @@
-import { StyleSheet } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Box, Center, Text, VStack, useTheme } from "native-base";
 import Header from "../../components/Header";
 import { Bookmark as BookmarkIcon } from "iconsax-react-native";
@@ -8,35 +7,63 @@ import { IRestaurantMockup } from "../../type/restaurant";
 import { RootState, useAppSelector } from "../../store";
 import { doc, getDoc } from "firebase/firestore";
 import { firebaseDb } from "../../firebase";
+import { useIsFocused } from "@react-navigation/native";
 
 type Props = {};
 
 const Bookmark = ({}: Props) => {
   const { colors } = useTheme();
   const user = useAppSelector((state: RootState) => state.user.user);
+  const isFocused = useIsFocused();
 
   const [listRes, setListRes] = useState<IRestaurantMockup[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const fetchBookmarkRes = async () => {
-    const list: any = [];
-    const resArr: any = user?.bookmark.map(async (resId) => {
-      const resRef = doc(firebaseDb, "restaurants-2", resId);
-      const resSnap = await getDoc(resRef);
-      // TODO: remove id, it will added when created.
-      list.push({ ...resSnap.data(), id: resId });
-    });
-    await Promise.all(resArr);
-    setListRes(list);
-  };
+  const fetchBookmarkRes = useCallback(async () => {
+    const ids = user?.bookmark || [];
+    if (!ids.length) {
+      setListRes([]);
+      return;
+    }
 
+    setLoading(true);
+    try {
+      const list: IRestaurantMockup[] = [];
+      // tuần tự an toàn (ít thay đổi code), có thể tối ưu song song Promise.all như trước
+      await Promise.all(
+        ids.map(async (resId) => {
+          const resRef = doc(firebaseDb, "restaurants-2", resId);
+          const resSnap = await getDoc(resRef);
+          if (resSnap.exists()) {
+            list.push({ ...(resSnap.data() as any), id: resId });
+          }
+        })
+      );
+      setListRes(list);
+    } catch (e) {
+      console.log("fetchBookmarkRes error:", e);
+      setListRes([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.bookmark]);
+
+  // Refetch khi:
+  // - màn Bookmark được focus
+  // - danh sách bookmark thay đổi
   useEffect(() => {
-    fetchBookmarkRes();
-  }, []);
+    if (isFocused) fetchBookmarkRes();
+  }, [isFocused, fetchBookmarkRes]);
 
   return (
-    <Box flex={1} bgColor={"#fff"}>
+    <Box flex={1} bgColor="#fff">
       <Header.BasicHeader title="Đã lưu" />
-      {listRes.length > 0 ? (
+
+      {loading ? (
+        <Center flex={1}>
+          <Text color="coolGray.400">Đang tải…</Text>
+        </Center>
+      ) : listRes.length > 0 ? (
         <Box flex={1}>
           <VStack p={4} flex={1} space={4}>
             {listRes.map((res) => (
@@ -51,7 +78,7 @@ const Bookmark = ({}: Props) => {
           <Box>
             <BookmarkIcon size="64" color={colors.coolGray[300]} />
           </Box>
-          <Box>
+          <Box mt={2}>
             <Text fontWeight={400} fontSize={14} color={colors.coolGray[400]}>
               Bạn chưa lưu mục nào
             </Text>
@@ -63,5 +90,3 @@ const Bookmark = ({}: Props) => {
 };
 
 export default Bookmark;
-
-const styles = StyleSheet.create({});

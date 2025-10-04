@@ -48,12 +48,15 @@ import { useIsFocused } from "@react-navigation/native";
 import { selectCategory } from "../../data/utils";
 
 type Props = {} & NativeStackScreenProps<RootStackParams, "Restaurant">;
+const INITIAL_MENU_COUNT = 2; // số món hiển thị mặc định
 
 const Restaurant = (props: Props) => {
   const { navigation, route } = props;
   const { id } = route.params;
   const { colors } = useTheme();
   const dispatch = useAppDispatch();
+
+  const [menuExpanded, setMenuExpanded] = useState(false);
   const [listComment, setListComment] = useState<IComment[]>([]);
   const [isNotCommented, setIsNotCommented] = useState<boolean | null>(null);
   const [rating, setRating] = useState(0);
@@ -109,6 +112,15 @@ const Restaurant = (props: Props) => {
     }
   };
 
+  // danh sách hiển thị (có/không mở rộng)
+  const visibleMenu = useMemo(
+    () =>
+      menuExpanded ? filteredMenu : filteredMenu.slice(0, INITIAL_MENU_COUNT),
+    [filteredMenu, menuExpanded]
+  );
+
+  const remaining = Math.max(filteredMenu.length - INITIAL_MENU_COUNT, 0);
+
   useEffect(() => {
     const fetchComment = async () => {
       const q = query(
@@ -148,6 +160,10 @@ const Restaurant = (props: Props) => {
     fetchComment();
   }, [isFocused]);
 
+  useEffect(() => {
+    setMenuExpanded(false);
+  }, [activeMenuCat]);
+
   return (
     <Box flex={1} bgColor={"#fff"}>
       {/* Header + Cover */}
@@ -163,109 +179,194 @@ const Restaurant = (props: Props) => {
               title=""
               handleBtnBack={() => navigation.goBack()}
             />
-            <HStack px={5} pb={3} justifyContent={"space-between"}>
-              <VStack space={2} style={{ alignSelf: "center", flex: 1 }}>
-                <Text
-                  fontSize={textLen < 30 ? 20 : 16}
-                  fontWeight={700}
-                  color="#fff"
-                  paddingRight={8}
-                >
-                  {res?.name}
-                </Text>
-              </VStack>
-              <VStack justifyContent={"flex-end"}>
-                <Text
-                  textTransform={"uppercase"}
-                  fontWeight={700}
-                  fontSize={14}
-                  color={
-                    getStatus(res?.time?.open, res?.time?.close) ==
-                    "Đã đóng cửa"
-                      ? "red.600"
-                      : "green.600"
-                  }
-                  shadow={6}
-                >
-                  {getStatus(res?.time?.open, res?.time?.close)}
-                </Text>
-                <Text fontSize={13} fontWeight={400} color="#fff">
-                  {res?.time?.open} - {res?.time?.close}
-                </Text>
-              </VStack>
-            </HStack>
           </VStack>
         </BackgroundLayout>
       </Box>
 
       {/* Info block */}
-      <VStack
-        p={4}
-        space={2}
+      <Box
+        px={4}
+        pt={4}
+        pb={3}
         borderBottomWidth={1}
-        borderColor={"coolGray.200"}
+        borderColor="coolGray.200"
+        bg="#fff"
       >
-        <HStack alignItems={"center"} space={1}>
-          <Location size="20" color={colors.coolGray[500]} />
-          <Text
-            color={"coolGray.500"}
-            fontWeight={400}
-            fontSize={14}
-            paddingRight={8}
-          >
-            {res?.address}
-          </Text>
-        </HStack>
-        <HStack alignItems={"center"} space={1}>
-          <Gps size="20" color={colors.coolGray[500]} />
-          <Text color={"primary.600"} fontWeight={500} fontSize={14}>
-            {distanceUser.toFixed(2)} km
-          </Text>
-        </HStack>
-        <HStack alignItems={"center"} space={1}>
-          <Bag2 size="20" color={colors.coolGray[500]} />
-          <Text color={"coolGray.500"} fontWeight={400} fontSize={14}>
-            {res?.category
-              ?.map((cat: any) => selectCategory?.[cat]?.label ?? cat)
-              ?.toString()
-              ?.replaceAll(",", " - ")}
-          </Text>
-        </HStack>
-        <HStack justifyContent={"space-between"} alignItems="center">
-          <HStack alignItems={"center"} space={1}>
-            <DollarCircle size="20" color={colors.coolGray[500]} />
-            <Text color={"coolGray.500"} fontWeight={400} fontSize={14}>
-              {formatNumberToCurrency(res?.price?.min || 0, "đ")} -{" "}
-              {formatNumberToCurrency(res?.price?.max || 0, "đ")}
+        {/* hàng 1: tên + trạng thái + giờ mở cửa */}
+        <HStack alignItems="center" justifyContent="space-between" mb={2}>
+          <VStack flex={1} pr={3}>
+            <Text
+              fontSize={18}
+              fontWeight={800}
+              color="#0F172A"
+              numberOfLines={1}
+            >
+              {res?.name}
             </Text>
-          </HStack>
-          <HStack space={2} alignItems={"center"}>
-            {isNotCommented && (
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate("CommentForm", { id });
-                }}
-              >
-                <Messages3 size="24" color={colors.coolGray[500]} />
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity onPress={handleBookmarkRes}>
-              <Ionicons
-                name={isBookmarkRes ? "bookmark" : "bookmark-outline"}
-                size={24}
-                color={
-                  isBookmarkRes ? colors.primary[600] : colors.coolGray[500]
-                }
-              />
-            </TouchableOpacity>
-            <Center size="8" borderRadius={100} bgColor={"primary.600"}>
-              <Text fontWeight={700} fontSize={14} color="#fff">
-                {rating.toFixed(1)}
+            <Text fontSize={12} color="coolGray.500" mt={0.5}>
+              {res?.address}
+            </Text>
+          </VStack>
+
+          {/* trạng thái mở/đóng */}
+          <Box
+            px={3}
+            py={1}
+            borderRadius="full"
+            bg={
+              getStatus(res?.time?.open, res?.time?.close) === "Đã đóng cửa"
+                ? "red.50"
+                : "emerald.50"
+            }
+            borderWidth={1}
+            borderColor={
+              getStatus(res?.time?.open, res?.time?.close) === "Đã đóng cửa"
+                ? "red.200"
+                : "emerald.200"
+            }
+          >
+            <Text
+              fontSize={12}
+              fontWeight={700}
+              color={
+                getStatus(res?.time?.open, res?.time?.close) === "Đã đóng cửa"
+                  ? "red.600"
+                  : "emerald.700"
+              }
+            >
+              {getStatus(res?.time?.open, res?.time?.close)}
+            </Text>
+            <Text fontSize={11} color="coolGray.500" textAlign="center">
+              {res?.time?.open} - {res?.time?.close}
+            </Text>
+          </Box>
+        </HStack>
+
+        {/* hàng 2: khoảng cách + giá */}
+        <HStack alignItems="center" justifyContent="space-between" mt={1}>
+          <HStack alignItems="center" space={2}>
+            <HStack
+              alignItems="center"
+              space={1}
+              px={2.5}
+              py={1}
+              borderRadius="full"
+              bg="coolGray.100"
+            >
+              <Gps size={16} color={colors.coolGray[600]} />
+              <Text fontSize={12} color="primary.700" fontWeight={600}>
+                {distanceUser.toFixed(2)} km
               </Text>
-            </Center>
+            </HStack>
+
+            <HStack alignItems="center" space={1}>
+              <DollarCircle size={18} color={colors.coolGray[500]} />
+              <Text fontSize={13} color="coolGray.600">
+                {formatNumberToCurrency(res?.price?.min || 0, "đ")} –{" "}
+                {formatNumberToCurrency(res?.price?.max || 0, "đ")}
+              </Text>
+            </HStack>
+          </HStack>
+
+          {/* rating badge */}
+          <Center px={3} py={1} borderRadius="full" bg="primary.600">
+            <Text fontWeight={800} fontSize={13} color="#fff">
+              {rating.toFixed(1)}
+            </Text>
+          </Center>
+        </HStack>
+
+        {/* hàng 3: categories chips */}
+        <HStack mt={3} flexWrap="wrap" space={1.5}>
+          {(res?.category ?? []).map((cat: any, idx: number) => {
+            const label = selectCategory?.[cat]?.label ?? cat;
+            return (
+              <Box
+                key={`${cat}-${idx}`}
+                px={2.5}
+                py={1}
+                borderRadius="full"
+                bg="coolGray.100"
+                borderWidth={1}
+                borderColor="coolGray.200"
+              >
+                <Text fontSize={12} color="#0F172A">
+                  {label}
+                </Text>
+              </Box>
+            );
+          })}
+        </HStack>
+        {/* hàng 4: actions */}
+        <HStack mt={3.5} alignItems="center" justifyContent="space-between">
+          <HStack space={3} alignItems="center">
+            {/* Nút viết/đã đánh giá */}
+            <TouchableOpacity
+              onPress={() => {
+                if (isNotCommented) navigation.navigate("CommentForm", { id });
+              }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              disabled={!isNotCommented} // khi đã đánh giá thì không bấm được
+            >
+              <HStack
+                px={3}
+                py={1.5}
+                borderRadius="full"
+                alignItems="center"
+                space={1}
+                bg={isNotCommented ? "coolGray.100" : "emerald.50"}
+                borderWidth={1}
+                borderColor={isNotCommented ? "coolGray.200" : "emerald.200"}
+              >
+                <Messages3
+                  size={18}
+                  color={
+                    isNotCommented ? colors.coolGray[700] : colors.emerald[700]
+                  }
+                />
+                <Text
+                  fontSize={12}
+                  color={isNotCommented ? "coolGray.700" : "emerald.700"}
+                  fontWeight={isNotCommented ? 400 : 600}
+                >
+                  {isNotCommented ? "Viết đánh giá" : "Đã đánh giá"}
+                </Text>
+              </HStack>
+            </TouchableOpacity>
+
+            {/* Nút lưu quán */}
+            <TouchableOpacity
+              onPress={handleBookmarkRes}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <HStack
+                px={3}
+                py={1.5}
+                borderRadius="full"
+                bg={isBookmarkRes ? "primary.50" : "coolGray.100"}
+                borderWidth={1}
+                borderColor={isBookmarkRes ? "primary.200" : "coolGray.200"}
+                alignItems="center"
+                space={1}
+              >
+                <Ionicons
+                  name={isBookmarkRes ? "bookmark" : "bookmark-outline"}
+                  size={18}
+                  color={
+                    isBookmarkRes ? colors.primary[600] : colors.coolGray[700]
+                  }
+                />
+                <Text
+                  fontSize={12}
+                  color={isBookmarkRes ? "primary.700" : "coolGray.700"}
+                >
+                  {isBookmarkRes ? "Đã lưu" : "Lưu quán"}
+                </Text>
+              </HStack>
+            </TouchableOpacity>
           </HStack>
         </HStack>
-      </VStack>
+      </Box>
 
       {/* ===== MENU SECTION (NEW) ===== */}
       <ScrollView>
@@ -304,71 +405,100 @@ const Restaurant = (props: Props) => {
           </VStack>
 
           {/* Danh sách món */}
+          {/* Danh sách món */}
           {filteredMenu.length === 0 ? (
             <Box py={8} alignItems="center">
               <Text color="coolGray.500">Chưa có món trong danh mục này.</Text>
             </Box>
           ) : (
-            <VStack space={3}>
-              {filteredMenu.map((m, idx) => (
-                <HStack
-                  key={`${m.id ?? idx}`}
-                  space={3}
-                  alignItems="center"
-                  borderWidth={1}
-                  borderColor="coolGray.200"
-                  borderRadius="lg"
-                  p={2}
-                >
-                  {/* Ảnh món */}
-                  {m.photo ? (
-                    <Image
-                      alt={m.name}
-                      source={{ uri: m.photo }}
-                      width={90}
-                      height={70}
-                      borderRadius={10}
-                      resizeMode="cover"
-                      bg="coolGray.100"
-                    />
-                  ) : (
-                    <Box
-                      width={90}
-                      height={70}
-                      borderRadius={10}
-                      bg="coolGray.100"
-                    />
-                  )}
+            <>
+              <VStack space={3}>
+                {visibleMenu.map((m, idx) => (
+                  <HStack
+                    key={`${m.id ?? idx}`}
+                    space={3}
+                    alignItems="center"
+                    borderWidth={1}
+                    borderColor="coolGray.200"
+                    borderRadius="lg"
+                    p={2}
+                  >
+                    {/* Ảnh món */}
+                    {m.photo ? (
+                      <Image
+                        alt={m.name}
+                        source={{ uri: m.photo }}
+                        width={90}
+                        height={70}
+                        borderRadius={10}
+                        resizeMode="cover"
+                        bg="coolGray.100"
+                      />
+                    ) : (
+                      <Box
+                        width={90}
+                        height={70}
+                        borderRadius={10}
+                        bg="coolGray.100"
+                      />
+                    )}
 
-                  {/* Thông tin món */}
-                  <VStack flex={1} space={0.5}>
-                    <Text
-                      numberOfLines={1}
-                      fontWeight={700}
-                      fontSize={14}
-                      color="#0F172A"
-                    >
-                      {m.name}
-                    </Text>
-                    {m.category ? (
-                      <Text fontSize={12} color="coolGray.500">
-                        {m.category}
+                    {/* Thông tin món */}
+                    <VStack flex={1} space={0.5}>
+                      <Text
+                        numberOfLines={1}
+                        fontWeight={700}
+                        fontSize={14}
+                        color="#0F172A"
+                      >
+                        {m.name}
                       </Text>
-                    ) : null}
-                    {typeof m.basePrice === "number" ? (
+                      {!!m.category && (
+                        <Text fontSize={12} color="coolGray.500">
+                          {m.category}
+                        </Text>
+                      )}
+                      {typeof m.basePrice === "number" && (
+                        <Text
+                          fontSize={13}
+                          fontWeight={600}
+                          color="primary.600"
+                          mt={1}
+                        >
+                          {formatNumberToCurrency(m.basePrice, "đ")}
+                        </Text>
+                      )}
+                    </VStack>
+                  </HStack>
+                ))}
+              </VStack>
+
+              {/* Nút xem thêm / thu gọn */}
+              {filteredMenu.length > INITIAL_MENU_COUNT && (
+                <Center mt={2}>
+                  <Pressable onPress={() => setMenuExpanded((v) => !v)}>
+                    <Box
+                      px={4}
+                      py={2}
+                      borderRadius="full"
+                      bg={menuExpanded ? "coolGray.100" : "primary.50"}
+                      borderWidth={1}
+                      borderColor={
+                        menuExpanded ? "coolGray.200" : "primary.200"
+                      }
+                    >
                       <Text
                         fontSize={13}
-                        fontWeight={600}
-                        color="primary.600"
-                        mt={1}
+                        fontWeight={700}
+                        color={menuExpanded ? "coolGray.700" : "primary.700"}
                       >
-                        {formatNumberToCurrency(m.basePrice, "đ")}
+                        {menuExpanded ? "Thu gọn" : `Xem thêm ${remaining} món`}
                       </Text>
-                    ) : null}
-                  </VStack>
-                </HStack>
-              ))}
-            </VStack>
+                    </Box>
+                  </Pressable>
+                </Center>
+              )}
+            </>
           )}
 
           {/* ===== COMMENTS ===== */}
