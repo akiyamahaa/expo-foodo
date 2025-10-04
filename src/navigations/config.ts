@@ -3,6 +3,7 @@ import { NavigatorScreenParams } from "@react-navigation/native";
 export type RootStackParams = {
   Auth?: NavigatorScreenParams<AuthStackParams>;
   TabNav?: undefined;
+  Onboarding: undefined;
   CreateMenu: undefined;
   CreateMenu2: undefined;
   BMI: undefined;

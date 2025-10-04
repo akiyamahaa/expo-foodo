@@ -76,13 +76,13 @@ const SignUp = (props: Props) => {
         <VStack w="100%" space={4}>
           <InputLabel
             label="Số điện thoại"
-            placeholder="Nhập số điện thoại/Email"
+            placeholder="Số điện thoại"
             value={formData.phone}
             onChangeText={onInputChange("phone", setFormData, formData)}
           />
           <InputLabel
-            label="Nhập mật khẩu"
-            placeholder="Nhập mật khẩu"
+            label="Mật khẩu"
+            placeholder="Mật khẩu"
             showIcon
             secureTextEntry
             value={formData.password}

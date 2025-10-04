@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ErrorOverlay from "../components/ErrorOverlay";
@@ -27,35 +27,35 @@ import { setLocation } from "../store/location.reducer";
 import UserInfo from "../screens/main/UserInfo";
 import ChangePassword from "../screens/main/ChangePassword";
 import ChangeAvatar from "../screens/main/ChangeAvatar";
+import Onboarding from "../screens/auth/Onboarding";
 
 const Stack = createNativeStackNavigator<RootStackParams>();
 
 const Root = () => {
   const user = useAppSelector((state: RootState) => state.user.user);
+
   const dispatch = useAppDispatch();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
 
   useEffect(() => {
     (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          dispatch(
+            setError({
+              title: "Lỗi hệ thống",
+              message: "Permission to access location was denied",
+            })
+          );
+          return;
+        }
+        const loc: any = await Location.getCurrentPositionAsync({});
         dispatch(
-          setError({
-            title: "Lỗi hệ thống",
-            message: "Permission to access location was denied",
-          })
+          setLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude })
         );
-        return;
-      }
-
-      let location: any = await Location.getCurrentPositionAsync({});
-      dispatch(
-        setLocation({
-          lat: location.coords.latitude,
-          lng: location.coords.longitude,
-        })
-      );
+      } catch {}
     })();
   }, []);
 
@@ -92,12 +92,17 @@ const Root = () => {
       <ErrorOverlay />
       <NavigationContainer>
         <Stack.Navigator
-          screenOptions={{
-            headerShown: false,
-          }}
+          screenOptions={{ headerShown: false }}
+          initialRouteName="Onboarding" // ✅ luôn bắt đầu bằng Onboarding
         >
-          {!user && <Stack.Screen name="Auth" component={AuthStack} />}
-          {user && (
+          {!user ? (
+            // Chưa đăng nhập: luôn cho thấy Onboarding + Auth flow
+            <>
+              <Stack.Screen name="Onboarding" component={Onboarding} />
+              <Stack.Screen name="Auth" component={AuthStack} />
+            </>
+          ) : (
+            // Đã đăng nhập: toàn bộ main flow
             <Stack.Group>
               <Stack.Screen name="TabNav" component={TabNav} />
               <Stack.Screen name="Password" component={ChangePassword} />

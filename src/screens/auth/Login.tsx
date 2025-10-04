@@ -45,8 +45,7 @@ const Login = (props: Props) => {
           dispatch(setUser(userProfile as IUserProfile));
         }
       } else {
-        // docSnap.data() will be undefined in this case
-        console.log("Số điện thoại chưa đăng ký");
+        setError("Số điện thoại chưa đăng ký");
       }
     } catch (err) {
       console.error(err);
@@ -69,7 +68,7 @@ const Login = (props: Props) => {
         <VStack w="100%" space={2}>
           <InputLabel
             label="Số điện thoại"
-            placeholder="Nhập số điện thoại/Email"
+            placeholder="Nhập số điện thoại"
             value={phone}
             onChangeText={setPhone}
           />
