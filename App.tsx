@@ -20,6 +20,7 @@ import {
 } from "@expo-google-fonts/inter";
 import appTheme from "./src/theme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import DevSeedScreen from "./src/screens/dev/DevSeedScreen";
 
 SplashScreen.preventAutoHideAsync();
 export default function App() {
@@ -49,6 +50,7 @@ export default function App() {
       <NativeBaseProvider theme={appTheme}>
         <Provider store={store}>
           <Root />
+          {/* <DevSeedScreen /> */}
         </Provider>
       </NativeBaseProvider>
     </GestureHandlerRootView>

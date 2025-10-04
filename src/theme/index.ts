@@ -6,7 +6,7 @@ import { extendTheme } from "native-base";
 
 export const newColorTheme = {
   primary: {
-    600: "#EC3900",
+    600: "#057e3e",
   },
   coolGray: {
     100: "#F3F4F6",
@@ -54,4 +54,3 @@ declare module "native-base" {
   interface ICustomTheme extends AppThemeType {}
 }
 export default appTheme;
-

@@ -41,7 +41,7 @@ const Home = ({}: Props) => {
   );
 
   const fetchAllRestaurant = useCallback(async () => {
-    const queryRes = await getDocs(collection(firebaseDb, "restaurants"));
+    const queryRes = await getDocs(collection(firebaseDb, "restaurants-2"));
     const restaurants: IRestaurant[] = [];
     queryRes.forEach((doc: any) =>
       restaurants.push({ id: doc.id, ...doc.data() })

@@ -1,21 +1,16 @@
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 import React, { useState } from "react";
-import { Box, HStack, Text, VStack } from "native-base";
+import { Box, HStack, Text, VStack, Image } from "native-base";
 import InputLabel from "../../components/InputLabel";
 import CustomButton from "../../components/CustomButton";
 import BoxContainer from "../../components/BoxContainer";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { AuthStackParams, RootStackParams } from "../../navigations/config";
+import { RootStackParams } from "../../navigations/config";
 import { useDispatch } from "react-redux";
 import { removeLoading, setLoading } from "../../store/loading.reducer";
-import {
-  fillProfileSchema,
-  onInputChange,
-  signUpSchema,
-} from "../../utils/forms";
+import { onInputChange, signUpSchema } from "../../utils/forms";
 import { firebaseDb } from "../../firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { setUser } from "../../store/user.reducer";
+import { doc, getDoc } from "firebase/firestore";
 
 type Props = {} & NativeStackScreenProps<RootStackParams, "Auth"> & any;
 
@@ -30,85 +25,99 @@ const SignUp = (props: Props) => {
   const dispatch = useDispatch();
 
   const [formData, setFormData] = useState<ISignUp>({
-    phone: "0914728469",
-    password: "12345678",
-    repassword: "12345678",
+    phone: "",
+    password: "",
+    repassword: "",
   });
+  const [error, setError] = useState<string>("");
 
   const handleLoginScreen = () => {
     navigation.navigate("Login");
   };
 
   const handleSignUp = async () => {
-    // Loading
+    setError("");
     dispatch(setLoading());
-    // Validate
     try {
-      console.log(
-        "🚀 ~ file: SignUp.tsx:47 ~ handleSignUp ~ formData:",
-        formData
-      );
       await signUpSchema.validate(formData);
       if (formData.password !== formData.repassword) {
-        throw Error("Nhập lại mật khẩu chưa đúng");
+        throw new Error("Nhập lại mật khẩu chưa đúng");
       }
       const docRef = doc(firebaseDb, "users", formData.phone);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        throw Error("Số điện thoại đã tồn tại");
+        throw new Error("Số điện thoại đã tồn tại");
       }
-      /**
-       * * * * * * * * * * * * * * * * * * *
-       * TODO: Move to OTP if didn't exist *
-       * * * * * * * * * * * * * * * * * * *
-       */
+      // chuyển sang bước PostAuth (OTP/điền hồ sơ…)
       navigation.navigate("PostAuth", {
         phone: formData.phone,
         password: formData.password,
       });
-    } catch (err) {
-      console.log("Lỗi hệ thống", err);
+    } catch (err: any) {
+      setError(err?.message || "Có lỗi xảy ra, vui lòng thử lại");
+      console.log("SignUp error:", err);
     } finally {
       dispatch(removeLoading());
     }
   };
+
   return (
-    <BoxContainer justifyContent={"center"} alignItems={"center"} px={6}>
-      <VStack flex={1} justifyContent={"center"} space={4}>
-        <InputLabel
-          label="Số điện thoại"
-          placeholder="Nhập số điện thoại/Email"
-          value={formData.phone}
-          onChangeText={onInputChange("phone", setFormData, formData)}
+    <BoxContainer justifyContent="center" alignItems="center" px={6}>
+      {/* LOGO */}
+      <VStack flex={1} justifyContent="center" alignItems="center" space={8}>
+        <Image
+          source={require("../../../assets/logo.png")}
+          alt="HanoiEats Logo"
+          resizeMode="contain"
+          style={{ width: 280, height: 280 }}
         />
-        <InputLabel
-          label="Nhập mật khẩu"
-          placeholder="Nhập mật khẩu"
-          showIcon={true}
-          secureTextEntry={true}
-          value={formData.password}
-          onChangeText={onInputChange("password", setFormData, formData)}
-        />
-        <InputLabel
-          label="Nhập lại mật khẩu"
-          placeholder="Nhập lại mật khẩu"
-          showIcon={true}
-          secureTextEntry={true}
-          value={formData.repassword}
-          onChangeText={onInputChange("repassword", setFormData, formData)}
-        />
-        <Box mt={8}>
-          <CustomButton btnText={"Đăng ký"} handleBtn={handleSignUp} />
-        </Box>
+
+        {/* FORM */}
+        <VStack w="100%" space={4}>
+          <InputLabel
+            label="Số điện thoại"
+            placeholder="Nhập số điện thoại/Email"
+            value={formData.phone}
+            onChangeText={onInputChange("phone", setFormData, formData)}
+          />
+          <InputLabel
+            label="Nhập mật khẩu"
+            placeholder="Nhập mật khẩu"
+            showIcon
+            secureTextEntry
+            value={formData.password}
+            onChangeText={onInputChange("password", setFormData, formData)}
+          />
+          <InputLabel
+            label="Nhập lại mật khẩu"
+            placeholder="Nhập lại mật khẩu"
+            showIcon
+            secureTextEntry
+            value={formData.repassword}
+            onChangeText={onInputChange("repassword", setFormData, formData)}
+          />
+
+          {!!error && (
+            <Text fontSize={12} color="error.500">
+              {error}
+            </Text>
+          )}
+
+          <Box mt={4}>
+            <CustomButton btnText="Đăng ký" handleBtn={handleSignUp} />
+          </Box>
+        </VStack>
       </VStack>
+
+      {/* FOOTER */}
       <HStack mb={16} space={1}>
         <Text fontWeight={400}>Bạn đã có tài khoản?</Text>
         <TouchableOpacity onPress={handleLoginScreen}>
           <Text
             fontWeight={500}
             fontSize={12}
-            color={"primary.600"}
-            textDecorationLine={"underline"}
+            color="primary.600"
+            textDecorationLine="underline"
           >
             Đăng nhập
           </Text>
@@ -119,5 +128,3 @@ const SignUp = (props: Props) => {
 };
 
 export default SignUp;
-
-const styles = StyleSheet.create({});

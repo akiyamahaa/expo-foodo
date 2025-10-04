@@ -1,5 +1,5 @@
-import { StyleSheet, TouchableOpacity } from "react-native";
-import React, { useEffect, useState } from "react";
+import { StyleSheet, TouchableOpacity, Image as RNImage } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Center,
@@ -8,15 +8,15 @@ import {
   Text,
   VStack,
   useTheme,
+  Image, // native-base Image (dễ style), nếu muốn RNImage thì dùng RNImage
+  Pressable,
 } from "native-base";
 import {
   Bag2,
-  Bookmark,
   DollarCircle,
   Gps,
   Location,
   Messages3,
-  Shop,
 } from "iconsax-react-native";
 import BackgroundLayout from "../../components/BackgroundLayout";
 import RestaurantComment from "../../components/RestaurantComment";
@@ -33,7 +33,7 @@ import {
   where,
 } from "firebase/firestore";
 import { firebaseDb } from "../../firebase";
-import { IComment, IRestaurant } from "../../type/restaurant";
+import { IComment, IMenuItem, IRestaurant } from "../../type/restaurant";
 import { RootState, useAppDispatch, useAppSelector } from "../../store";
 import {
   formatNumberToCurrency,
@@ -44,7 +44,9 @@ import { removeLoading, setLoading } from "../../store/loading.reducer";
 import { setUser } from "../../store/user.reducer";
 import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
+// nếu bạn có Category enum utils thì giữ, còn không phần Bag2 vẫn render như cũ
 import { selectCategory } from "../../data/utils";
+
 type Props = {} & NativeStackScreenProps<RootStackParams, "Restaurant">;
 
 const Restaurant = (props: Props) => {
@@ -60,11 +62,24 @@ const Restaurant = (props: Props) => {
     (state: RootState) => state.location.location
   );
   const isBookmarkRes = user?.bookmark.includes(id);
-
   const isFocused = useIsFocused();
 
   const [res, setRes] = useState<IRestaurant | any>();
   const [textLen, setTextLen] = useState(10);
+
+  // ======= MENU STATE (NEW) =======
+  const menu: IMenuItem[] = useMemo(() => res?.menu ?? [], [res?.menu]);
+  const menuCats = useMemo(() => {
+    const set = new Set<string>();
+    (menu || []).forEach((m) => m.category && set.add(m.category));
+    return ["all", ...Array.from(set)];
+  }, [menu]);
+  const [activeMenuCat, setActiveMenuCat] = useState<string>("all");
+
+  const filteredMenu = useMemo(() => {
+    if (activeMenuCat === "all") return menu;
+    return (menu || []).filter((m) => m.category === activeMenuCat);
+  }, [menu, activeMenuCat]);
 
   const distanceUser = haversineDistance(
     res?.lat || 0,
@@ -78,23 +93,14 @@ const Restaurant = (props: Props) => {
     try {
       if (user) {
         let newFavourite;
-        // check isFavourite
         if (isBookmarkRes) {
           newFavourite = user.bookmark.filter((resId: string) => resId !== id);
         } else {
           newFavourite = [...user.bookmark, id];
         }
-        // console.log(newFavourite);
-
-        const newUser = {
-          ...user,
-          bookmark: newFavourite,
-        };
-
+        const newUser = { ...user, bookmark: newFavourite };
         dispatch(setUser(newUser));
-
         await updateDoc(doc(firebaseDb, "users", user.phone), newUser);
-        // navigation.navigate("TabNav");
       }
     } catch (err) {
       console.log(err);
@@ -114,22 +120,21 @@ const Restaurant = (props: Props) => {
       commentSnapShot.forEach((doc) => {
         comments.push(doc.data() as any);
       });
-      // check user comment
       const check = comments.filter((cmt) => cmt.userId == user?.phone);
       setIsNotCommented(!Boolean(check.length));
       setListComment(comments);
 
-      // Calculate Average Rating
       const averageRating =
         comments.reduce((total, curComment) => {
           return total + curComment.comment.avgRating;
         }, 0) / comments.length;
       setRating(averageRating || 0);
     };
+
     const getInfoRestaurant = async () => {
       try {
         dispatch(setLoading());
-        const resRef = doc(firebaseDb, "restaurants", id);
+        const resRef = doc(firebaseDb, "restaurants-2", id);
         const resSnap = await getDoc(resRef);
         setRes(resSnap.data() as IRestaurant);
         setTextLen(resSnap.data()!.name.length);
@@ -145,6 +150,7 @@ const Restaurant = (props: Props) => {
 
   return (
     <Box flex={1} bgColor={"#fff"}>
+      {/* Header + Cover */}
       <Box height="240">
         <BackgroundLayout
           imageSource={{
@@ -191,6 +197,8 @@ const Restaurant = (props: Props) => {
           </VStack>
         </BackgroundLayout>
       </Box>
+
+      {/* Info block */}
       <VStack
         p={4}
         space={2}
@@ -218,41 +226,30 @@ const Restaurant = (props: Props) => {
           <Bag2 size="20" color={colors.coolGray[500]} />
           <Text color={"coolGray.500"} fontWeight={400} fontSize={14}>
             {res?.category
-              .map((cat: any) => selectCategory[cat].label)
-              .toString()
-              .replaceAll(",", " - ")}
+              ?.map((cat: any) => selectCategory?.[cat]?.label ?? cat)
+              ?.toString()
+              ?.replaceAll(",", " - ")}
           </Text>
         </HStack>
-        <HStack justifyContent={"space-between"}>
+        <HStack justifyContent={"space-between"} alignItems="center">
           <HStack alignItems={"center"} space={1}>
             <DollarCircle size="20" color={colors.coolGray[500]} />
             <Text color={"coolGray.500"} fontWeight={400} fontSize={14}>
-              {formatNumberToCurrency(res?.price.min || 0, "đ")} -{" "}
-              {formatNumberToCurrency(res?.price.max || 0, "đ")}
+              {formatNumberToCurrency(res?.price?.min || 0, "đ")} -{" "}
+              {formatNumberToCurrency(res?.price?.max || 0, "đ")}
             </Text>
           </HStack>
           <HStack space={2} alignItems={"center"}>
             {isNotCommented && (
               <TouchableOpacity
                 onPress={() => {
-                  navigation.navigate("CommentForm", {
-                    id: id,
-                    // restaurant: {
-                    //   ...res,
-                    //   rating: rating || 0,
-                    //   commentCount: listComment.length || 0,
-                    // },
-                  });
+                  navigation.navigate("CommentForm", { id });
                 }}
               >
                 <Messages3 size="24" color={colors.coolGray[500]} />
               </TouchableOpacity>
             )}
-            <TouchableOpacity
-              onPress={() => {
-                handleBookmarkRes();
-              }}
-            >
+            <TouchableOpacity onPress={handleBookmarkRes}>
               <Ionicons
                 name={isBookmarkRes ? "bookmark" : "bookmark-outline"}
                 size={24}
@@ -269,13 +266,119 @@ const Restaurant = (props: Props) => {
           </HStack>
         </HStack>
       </VStack>
+
+      {/* ===== MENU SECTION (NEW) ===== */}
       <ScrollView>
         <VStack p={4} space={4}>
-          {listComment.map((comments) => (
-            <Box key={comments.id}>
-              <RestaurantComment comments={comments} />
+          {/* Header + Category Chips */}
+          <VStack space={2}>
+            <HStack alignItems="center" justifyContent="space-between">
+              <Text fontSize={16} fontWeight={800} color="#0F172A">
+                Menu
+              </Text>
+              <Text fontSize={12} color="coolGray.500">
+                {filteredMenu.length} món
+              </Text>
+            </HStack>
+
+            {/* Chips đơn giản, không phụ thuộc CategoryPills để giảm ràng buộc */}
+            <HStack flexWrap="wrap" space={2}>
+              {menuCats.map((cat) => {
+                const active = activeMenuCat === cat;
+                return (
+                  <Pressable key={cat} onPress={() => setActiveMenuCat(cat)}>
+                    <Box
+                      px={3}
+                      py={1.5}
+                      borderRadius={999}
+                      bgColor={active ? "primary.600" : "coolGray.100"}
+                    >
+                      <Text fontSize={13} color={active ? "#fff" : "#0F172A"}>
+                        {cat === "all" ? "Tất cả" : cat}
+                      </Text>
+                    </Box>
+                  </Pressable>
+                );
+              })}
+            </HStack>
+          </VStack>
+
+          {/* Danh sách món */}
+          {filteredMenu.length === 0 ? (
+            <Box py={8} alignItems="center">
+              <Text color="coolGray.500">Chưa có món trong danh mục này.</Text>
             </Box>
-          ))}
+          ) : (
+            <VStack space={3}>
+              {filteredMenu.map((m, idx) => (
+                <HStack
+                  key={`${m.id ?? idx}`}
+                  space={3}
+                  alignItems="center"
+                  borderWidth={1}
+                  borderColor="coolGray.200"
+                  borderRadius="lg"
+                  p={2}
+                >
+                  {/* Ảnh món */}
+                  {m.photo ? (
+                    <Image
+                      alt={m.name}
+                      source={{ uri: m.photo }}
+                      width={90}
+                      height={70}
+                      borderRadius={10}
+                      resizeMode="cover"
+                      bg="coolGray.100"
+                    />
+                  ) : (
+                    <Box
+                      width={90}
+                      height={70}
+                      borderRadius={10}
+                      bg="coolGray.100"
+                    />
+                  )}
+
+                  {/* Thông tin món */}
+                  <VStack flex={1} space={0.5}>
+                    <Text
+                      numberOfLines={1}
+                      fontWeight={700}
+                      fontSize={14}
+                      color="#0F172A"
+                    >
+                      {m.name}
+                    </Text>
+                    {m.category ? (
+                      <Text fontSize={12} color="coolGray.500">
+                        {m.category}
+                      </Text>
+                    ) : null}
+                    {typeof m.basePrice === "number" ? (
+                      <Text
+                        fontSize={13}
+                        fontWeight={600}
+                        color="primary.600"
+                        mt={1}
+                      >
+                        {formatNumberToCurrency(m.basePrice, "đ")}
+                      </Text>
+                    ) : null}
+                  </VStack>
+                </HStack>
+              ))}
+            </VStack>
+          )}
+
+          {/* ===== Comments (giữ như cũ) ===== */}
+          <VStack space={3} mt={4}>
+            {listComment.map((comments) => (
+              <Box key={comments.id}>
+                <RestaurantComment comments={comments} />
+              </Box>
+            ))}
+          </VStack>
         </VStack>
       </ScrollView>
     </Box>

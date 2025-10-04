@@ -8,12 +8,12 @@ import { useDispatch } from "react-redux";
 import { removeLoading, setLoading } from "../../store/loading.reducer";
 import { doc, getDoc } from "firebase/firestore";
 import { firebaseDb } from "../../firebase";
-import { useNavigation } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParams } from "../../navigations/config";
 import { setUser } from "../../store/user.reducer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { IUserProfile } from "../../type/user";
+import { Image } from "native-base";
 
 type Props = {} & NativeStackScreenProps<RootStackParams, "Auth"> & any;
 
@@ -21,9 +21,8 @@ const Login = (props: Props) => {
   const { navigation } = props;
   const [error, setError] = useState("");
   const dispatch = useDispatch();
-  const handleForgetPassScreen = () => {};
-  const [phone, setPhone] = useState("0914728469");
-  const [password, setPassword] = useState("12345678");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
 
   const onForgotPassword = () => {
     navigation.navigate("ForgotPassword");
@@ -61,44 +60,49 @@ const Login = (props: Props) => {
   };
   return (
     <BoxContainer justifyContent={"center"} alignItems={"center"} px={6}>
-      <VStack flex={1} justifyContent={"center"} space={4}>
-        <InputLabel
-          label="Số điện thoại"
-          placeholder="Nhập số điện thoại/Email"
-          value={phone}
-          onChangeText={setPhone}
+      {/* Logo */}
+      <VStack flex={1} justifyContent={"center"} space={2} alignItems="center">
+        <Image
+          source={require("../../../assets/logo.png")} // đường dẫn tuỳ thuộc cấu trúc dự án
+          alt="HanoiEats Logo"
+          resizeMode="contain"
+          style={{ width: 280, height: 280 }}
+        />
 
-        />
-        <InputLabel
-          label="Mật khẩu"
-          placeholder="Nhập mật khẩu"
-          secureTextEntry={true}
-          showIcon={true}
-          value={password}
-          onChangeText={setPassword}
-        />
-        <HStack justifyContent={"space-between"} mb={6}>
-          <Box>
-            {error && (
-              <Text fontSize={12} fontWeight={400} color="error.500">
-                {error}
-              </Text>
-            )}
+        {/* Form login */}
+        <VStack w="100%" space={4}>
+          <InputLabel
+            label="Số điện thoại"
+            placeholder="Nhập số điện thoại/Email"
+            value={phone}
+            onChangeText={setPhone}
+          />
+          <InputLabel
+            label="Mật khẩu"
+            placeholder="Nhập mật khẩu"
+            secureTextEntry={true}
+            showIcon={true}
+            value={password}
+            onChangeText={setPassword}
+          />
+
+          <HStack justifyContent={"space-between"} mb={6}>
+            <Box>
+              {error && (
+                <Text fontSize={12} fontWeight={400} color="error.500">
+                  {error}
+                </Text>
+              )}
+            </Box>
+          </HStack>
+
+          <Box px={"20%"}>
+            <CustomButton btnText={"Đăng nhập"} handleBtn={handleLogIn} />
           </Box>
-          <TouchableOpacity onPress={onForgotPassword}>
-            <Text
-              fontSize={12}
-              color={"text.600"}
-              textDecorationLine={"underline"}
-            >
-              Quên mật khẩu?
-            </Text>
-          </TouchableOpacity>
-        </HStack>
-        <Box px={"20%"}>
-          <CustomButton btnText={"Đăng nhập"} handleBtn={handleLogIn} />
-        </Box>
+        </VStack>
       </VStack>
+
+      {/* Footer */}
       <HStack mb={16} space={1}>
         <Text fontWeight={400} fontSize={14}>
           Bạn chưa có tài khoản?

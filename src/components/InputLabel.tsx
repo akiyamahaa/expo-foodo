@@ -36,6 +36,9 @@ const InputLabel = (props: Props) => {
         color="coolGray.800"
         px={3}
         py={4}
+        autoComplete="off"
+        textContentType="none"
+        autoCorrect={false}
         borderRadius={100}
         backgroundColor={"#fff"}
         borderWidth={borderWidth}

@@ -4,23 +4,23 @@ import { Box, Center, Text, VStack, useTheme } from "native-base";
 import Header from "../../components/Header";
 import { Bookmark as BookmarkIcon } from "iconsax-react-native";
 import ItemCard from "../../components/ItemCard";
-import { IRestaurant } from "../../type/restaurant";
+import { IRestaurantMockup } from "../../type/restaurant";
 import { RootState, useAppSelector } from "../../store";
 import { doc, getDoc } from "firebase/firestore";
 import { firebaseDb } from "../../firebase";
 
 type Props = {};
 
-const Bookmark = (props: Props) => {
+const Bookmark = ({}: Props) => {
   const { colors } = useTheme();
   const user = useAppSelector((state: RootState) => state.user.user);
 
-  const [listRes, setListRes] = useState<IRestaurant[]>([]);
+  const [listRes, setListRes] = useState<IRestaurantMockup[]>([]);
 
   const fetchBookmarkRes = async () => {
     const list: any = [];
     const resArr: any = user?.bookmark.map(async (resId) => {
-      const resRef = doc(firebaseDb, "restaurants", resId);
+      const resRef = doc(firebaseDb, "restaurants-2", resId);
       const resSnap = await getDoc(resRef);
       // TODO: remove id, it will added when created.
       list.push({ ...resSnap.data(), id: resId });
@@ -32,6 +32,7 @@ const Bookmark = (props: Props) => {
   useEffect(() => {
     fetchBookmarkRes();
   }, []);
+
   return (
     <Box flex={1} bgColor={"#fff"}>
       <Header.BasicHeader title="Đã lưu" />

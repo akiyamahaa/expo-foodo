@@ -10,12 +10,11 @@ import {
 } from "iconsax-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
+import { RootState, useAppSelector } from "../store";
 
-const HomeHeader = ({
-  name = "Jack 5M",
-  handleSearch,
-  handleFilter = () => {},
-}: any) => {
+const HomeHeader = ({ handleSearch, handleFilter = () => {} }: any) => {
+  const user = useAppSelector((state: RootState) => state.user.user);
+
   const insets = useSafeAreaInsets();
   return (
     <Box
@@ -39,7 +38,9 @@ const HomeHeader = ({
           <Box size={8} borderRadius={100} overflow={"hidden"}>
             <Image
               source={{
-                uri: "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Yasuo_0.jpg",
+                uri:
+                  user?.avatarUrl ||
+                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgc2u0F9JdscSSIM4LH0ca2FLNgVS-vat7LSZKFb73azHEfhVfW7vwnFaq5bidMl1_tsg&usqp=CAU",
               }}
               style={{ width: 32, height: 32 }}
             />
