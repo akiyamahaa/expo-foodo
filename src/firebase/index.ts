@@ -10,7 +10,7 @@ const firebaseConfig = {
   storageBucket: "foodo-expo.appspot.com",
   messagingSenderId: "109630712587",
   appId: "1:109630712587:web:7fb7795ebf6bbca469500e",
-  measurementId: "G-E2CN3JF878"
+  measurementId: "G-E2CN3JF878",
 };
 
 const firebaseApp = initializeApp(firebaseConfig);

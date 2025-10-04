@@ -15,7 +15,7 @@ export const restaurantSample: IRestaurantMockup[] = [
     lng: 105.8079757,
     price: { min: 30000, max: 90000 },
     time: { open: "09:30", close: "21:00" },
-    district: EDistrict.HoangMai, // ✅ dùng enum
+    district: EDistrict.HoangMai,
     menu: [
       {
         name: "Cà phê sữa đá",
@@ -46,7 +46,7 @@ export const restaurantSample: IRestaurantMockup[] = [
     lng: 105.849925,
     price: { min: 40000, max: 120000 },
     time: { open: "08:30", close: "22:00" },
-    district: EDistrict.HaiBaTrung, // ✅ dùng enum
+    district: EDistrict.HaiBaTrung,
     menu: [
       {
         name: "Bún riêu bề bề đặc biệt",
