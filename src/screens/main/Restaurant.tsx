@@ -371,13 +371,26 @@ const Restaurant = (props: Props) => {
             </VStack>
           )}
 
-          {/* ===== Comments (giữ như cũ) ===== */}
-          <VStack space={3} mt={4}>
-            {listComment.map((comments) => (
-              <Box key={comments.id}>
-                <RestaurantComment comments={comments} />
-              </Box>
-            ))}
+          {/* ===== COMMENTS ===== */}
+          <VStack mt={6} space={3}>
+            <HStack
+              alignItems="center"
+              justifyContent="space-between"
+              mb={1}
+              px={1}
+            >
+              <Text fontSize={16} fontWeight={800} color="#0F172A">
+                Đánh giá ({listComment.length})
+              </Text>
+              {/* Có thể thêm Sort sau này: Mới nhất / Điểm cao */}
+              {/* <Select ... /> */}
+            </HStack>
+
+            <VStack space={3}>
+              {listComment.map((cmt) => (
+                <RestaurantComment key={cmt.id} comments={cmt} />
+              ))}
+            </VStack>
           </VStack>
         </VStack>
       </ScrollView>
@@ -386,5 +399,3 @@ const Restaurant = (props: Props) => {
 };
 
 export default Restaurant;
-
-const styles = StyleSheet.create({});

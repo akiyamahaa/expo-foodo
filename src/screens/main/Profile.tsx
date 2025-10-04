@@ -58,7 +58,11 @@ const Profile = (props: Props) => {
   const { colors } = useTheme();
   const user = useAppSelector((state: RootState) => state.user.user);
   const dispatch = useAppDispatch();
-  const type = ["Password", "UserInfo", "Policy"];
+  const type = [
+    // "Password",
+    "UserInfo",
+    "Policy",
+  ];
 
   const handleLogout = async () => {
     await AsyncStorage.clear();

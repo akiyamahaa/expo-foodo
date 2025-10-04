@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "expo-template",
-    "slug": "expo-template",
+    "name": "Hanoi Eats",
+    "slug": "hanoi-eats",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

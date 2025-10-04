@@ -1,69 +1,116 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
-import React, { useEffect, useState } from "react";
-import { Box, HStack, Text, VStack, useTheme } from "native-base";
+import React, { useEffect, useMemo, useState } from "react";
+import { Box, HStack, VStack, Text, useTheme, Pressable } from "native-base";
 import { Image } from "expo-image";
+import { DirectDown, DirectUp } from "iconsax-react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { IComment } from "../type/restaurant";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { firebaseDb } from "../firebase";
 import { IUserProfile } from "../type/user";
 import { getDMY } from "../utils/utils";
-import { DirectDown, DirectUp } from "iconsax-react-native";
+import { useAppSelector, RootState } from "../store";
 
 type Props = {
   comments: IComment;
 };
 
-const RestaurantComment = (props: Props) => {
-  const { comments } = props;
+const StarRow = ({ value }: { value: number }) => {
+  const full = Math.floor(value);
+  const half = value - full >= 0.5;
+  const arr = new Array(5)
+    .fill(0)
+    .map((_, i) => (i < full ? "full" : i === full && half ? "half" : "empty"));
+  return (
+    <HStack space={0.5}>
+      {arr.map((t, idx) => (
+        <Ionicons
+          key={idx}
+          name={
+            t === "full" ? "star" : t === "half" ? "star-half" : "star-outline"
+          }
+          size={14}
+          color="#F59E0B"
+        />
+      ))}
+    </HStack>
+  );
+};
+
+const RestaurantComment = ({ comments }: Props) => {
   const { colors } = useTheme();
+  const currentUser = useAppSelector((s: RootState) => s.user.user);
   const [commentState, setCommentState] = useState<IComment>(comments);
-  const [user, setUser] = useState<IUserProfile>();
+  const [user, setUser] = useState<IUserProfile | undefined>();
+  const [expanded, setExpanded] = useState(false);
 
-  const getUserFromId = async () => {
-    const userRef = doc(firebaseDb, "users", comments.userId);
-    const userSnap = await getDoc(userRef);
-    const userData = userSnap.data() as any as IUserProfile;
-    setUser(userData);
-  };
+  // Tổng điểm = up - down
+  const score = useMemo(() => {
+    const votes = Object.values(commentState.comment.vote || {});
+    const up = votes.filter((v) => v === 1).length;
+    const down = votes.filter((v) => v === -1).length;
+    return up - down;
+  }, [commentState.comment.vote]);
 
-  const commentsUp = Object.values(commentState.comment.vote).filter(
-    (value) => value == 1
-  ).length;
-  const commentsDown = Object.values(commentState.comment.vote).filter(
-    (value) => value == -1
-  ).length;
-
-  const checkExistComment = commentState.comment.vote[commentState.userId];
+  // Người dùng hiện tại đã vote gì?
+  const myVote: -1 | 0 | 1 = useMemo(() => {
+    const uid = currentUser?.phone;
+    if (!uid) return 0;
+    const v = (commentState.comment.vote || {})[
+      uid as keyof typeof commentState.comment.vote
+    ];
+    return (v as -1 | 1) ?? 0;
+  }, [commentState.comment.vote, currentUser?.phone]);
 
   useEffect(() => {
-    getUserFromId();
-  }, []);
+    (async () => {
+      const userRef = doc(firebaseDb, "users", comments.userId);
+      const userSnap = await getDoc(userRef);
+      setUser(userSnap.data() as IUserProfile | undefined);
+    })();
+  }, [comments.userId]);
 
-  const handleVoteComment = async (voteValue: -1 | 1) => {
+  const handleVote = async (voteValue: -1 | 1) => {
     try {
-      const { id, userId } = comments;
-      const cloneComment = { ...comments };
-      // check exist vote on comment
-      if (
-        cloneComment.comment.vote[userId] &&
-        cloneComment.comment.vote[userId] == voteValue
-      ) {
-        delete cloneComment.comment.vote[userId];
+      const uid = currentUser?.phone;
+      if (!uid) return; // chưa đăng nhập
+      const clone = { ...commentState };
+      const hasSame = clone.comment.vote?.[uid] === voteValue;
+
+      // khởi tạo map nếu chưa có
+      if (!clone.comment.vote) clone.comment.vote = {};
+
+      if (hasSame) {
+        // bấm lại để gỡ vote
+        delete clone.comment.vote[uid];
       } else {
-        cloneComment.comment.vote[userId] = voteValue;
+        clone.comment.vote[uid] = voteValue;
       }
-      setCommentState(cloneComment);
-      await updateDoc(doc(firebaseDb, "comments", id!), cloneComment);
-    } catch (err) {
-      console.log(err);
+
+      setCommentState(clone); // optimistic update
+      await updateDoc(doc(firebaseDb, "comments", clone.id!), clone);
+    } catch (e) {
+      console.log("vote error:", e);
     }
   };
 
+  const content = commentState.comment.content || "";
+  const isLong = content.length > 180;
+  const visibleContent = expanded ? content : content.slice(0, 180);
+
   return (
-    <VStack space={2}>
-      <HStack alignItems={"center"} justifyContent={"space-between"}>
-        <HStack alignItems={"center"} space={3}>
-          <Box size={12} borderRadius={100} overflow={"hidden"}>
+    <Box
+      bg="#fff"
+      borderRadius="2xl"
+      borderWidth={1}
+      borderColor="coolGray.200"
+      p={4}
+      shadow={1}
+    >
+      {/* Header */}
+      <HStack alignItems="center" justifyContent="space-between">
+        <HStack space={3} alignItems="center" flex={1}>
+          <Box size={12} borderRadius={999} overflow="hidden" bg="coolGray.100">
             <Image
               source={{
                 uri:
@@ -73,71 +120,81 @@ const RestaurantComment = (props: Props) => {
               style={{ width: 48, height: 48 }}
             />
           </Box>
-          <VStack>
-            <Text fontWeight={500} fontSize={14}>
-              {user?.fullname}
+          <VStack flex={1}>
+            <Text
+              fontWeight={700}
+              fontSize={14}
+              color="#0F172A"
+              numberOfLines={1}
+            >
+              {user?.fullname || "Ẩn danh"}
             </Text>
-            <Text fontWeight={400} fontSize={12} color="coolGray.500">
-              {getDMY(commentState.comment.timestamp)}
-            </Text>
-            <HStack alignItems={"center"} space={2}>
-              <Text fontWeight={500} fontSize={14}>
-                Rating
-              </Text>
-              <Text fontWeight={500} fontSize={14}>
-                -
-              </Text>
-              <Text fontWeight={700} fontSize={16} color="error.500">
-                {commentState.comment.avgRating}
+            <HStack alignItems="center" space={2}>
+              <StarRow value={Number(commentState.comment.avgRating) || 0} />
+              <Text fontSize={12} color="coolGray.500">
+                • {getDMY(commentState.comment.timestamp)}
               </Text>
             </HStack>
           </VStack>
         </HStack>
-        <HStack alignItems={"center"} space={4}>
-          {/* TODO: Setup up down vote */}
-          <HStack space={1}>
-            <TouchableOpacity onPress={() => handleVoteComment(1)}>
-              <DirectUp
-                size="24"
-                color={
-                  checkExistComment == 1
-                    ? colors.primary[600]
-                    : colors.coolGray[500]
-                }
-              />
-            </TouchableOpacity>
-            <Text fontWeight={500} fontSize={18}>
-              {commentsUp - commentsDown}
-            </Text>
-            <TouchableOpacity onPress={() => handleVoteComment(-1)}>
-              <DirectDown
-                size="24"
-                color={
-                  checkExistComment == -1
-                    ? colors.primary[600]
-                    : colors.coolGray[500]
-                }
-              />
-            </TouchableOpacity>
-          </HStack>
+
+        {/* Vote */}
+        <HStack alignItems="center" space={2}>
+          <Pressable onPress={() => handleVote(1)}>
+            <DirectUp
+              size="24"
+              color={myVote === 1 ? colors.primary[600] : colors.coolGray[500]}
+            />
+          </Pressable>
+          <Text
+            fontWeight={700}
+            fontSize={16}
+            color="#0F172A"
+            minWidth={18}
+            textAlign="center"
+          >
+            {score}
+          </Text>
+          <Pressable onPress={() => handleVote(-1)}>
+            <DirectDown
+              size="24"
+              color={myVote === -1 ? colors.primary[600] : colors.coolGray[500]}
+            />
+          </Pressable>
         </HStack>
       </HStack>
-      <Box>
-        <Text fontWeight={700} fontSize={16}>
+
+      {/* Title + content */}
+      {!!commentState.comment.title && (
+        <Text mt={3} fontWeight={800} fontSize={15} color="#0F172A">
           {commentState.comment.title}
         </Text>
-        <Text fontWeight={400} fontSize={14}>
-          {commentState.comment.content}
+      )}
+      {!!content && (
+        <Text mt={2} fontSize={14} color="coolGray.700" lineHeight={20}>
+          {visibleContent}
+          {isLong && !expanded ? "…" : ""}
         </Text>
-      </Box>
-      <Box>
-        <Image
-          source={{ uri: commentState.comment.imageUrl }}
-          alt={commentState.comment.imageName}
-          style={{ height: 240, width: "100%", borderRadius: 8 }}
-        />
-      </Box>
-    </VStack>
+      )}
+      {isLong && (
+        <Pressable onPress={() => setExpanded((s) => !s)}>
+          <Text mt={1} fontSize={12} color="primary.600" underline>
+            {expanded ? "Thu gọn" : "Xem thêm"}
+          </Text>
+        </Pressable>
+      )}
+
+      {/* Image */}
+      {!!commentState.comment.imageUrl && (
+        <Box mt={3} overflow="hidden" borderRadius={12} bg="coolGray.100">
+          <Image
+            source={{ uri: commentState.comment.imageUrl }}
+            contentFit="cover"
+            style={{ width: "100%", height: 200 }}
+          />
+        </Box>
+      )}
+    </Box>
   );
 };
 

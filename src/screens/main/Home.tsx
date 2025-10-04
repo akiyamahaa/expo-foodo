@@ -87,10 +87,6 @@ const Home = ({}: Props) => {
 
   const ListHeader = (
     <View>
-      {/* Giữ header tìm kiếm/Filter của bạn */}
-      {/* (nếu Header.HomeHeader đã render ở bên ngoài, bỏ dòng này) */}
-      {/* <Header.HomeHeader handleSearch={handleSearch} handleFilter={() => setShowModal(true)} /> */}
-
       {/* All Categories */}
       <HStack
         alignItems="center"
@@ -100,9 +96,9 @@ const Home = ({}: Props) => {
         <Text fontSize={16} fontWeight={800} color="#0F172A">
           All Categories
         </Text>
-        <Text fontSize={13} color="#2563EB">
+        {/* <Text fontSize={13} color="#2563EB">
           See All
-        </Text>
+        </Text> */}
       </HStack>
       <CategoryPills
         items={catItems}
@@ -119,9 +115,9 @@ const Home = ({}: Props) => {
         <Text fontSize={16} fontWeight={800} color="#0F172A">
           Open Restaurants
         </Text>
-        <Text fontSize={13} color="#2563EB">
+        {/* <Text fontSize={13} color="#2563EB">
           See All
-        </Text>
+        </Text> */}
       </HStack>
     </View>
   );
@@ -146,6 +142,28 @@ const Home = ({}: Props) => {
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <Box height={4} />}
         ListHeaderComponent={ListHeader}
+        ListEmptyComponent={
+          <Box alignItems="center" justifyContent="center" py={24}>
+            <Text fontSize={16} fontWeight={700} color="#334155">
+              Không có cửa hàng phù hợp
+            </Text>
+            <Text mt={1} fontSize={13} color="#64748B">
+              Thử đổi bộ lọc hoặc từ khoá khác nhé.
+            </Text>
+            <Text
+              mt={3}
+              fontSize={13}
+              color="#2563EB"
+              onPress={() => {
+                // reset nhanh
+                setActiveCat("all");
+                setListRes(allRes);
+              }}
+            >
+              Xoá bộ lọc
+            </Text>
+          </Box>
+        }
         // không dùng ScrollView dọc ở đâu khác
       />
     </Box>

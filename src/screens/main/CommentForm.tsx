@@ -1,6 +1,15 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform } from "react-native";
 import React, { useState } from "react";
-import { Box, Center, Input, TextArea, VStack, useTheme } from "native-base";
+import {
+  Box,
+  Center,
+  Input,
+  TextArea,
+  VStack,
+  useTheme,
+  KeyboardAvoidingView,
+  ScrollView,
+} from "native-base";
 import Header from "../../components/Header";
 import CustomButton from "../../components/CustomButton";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -16,8 +25,11 @@ import { collection, doc, setDoc } from "firebase/firestore";
 import { firebaseDb } from "../../firebase";
 import { IComment } from "../../type/restaurant";
 import { uploadImage } from "../../data/mockup";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props = {} & NativeStackScreenProps<RootStackParams, "CommentForm">;
+
+const BUTTON_HEIGHT = 56;
 
 const CommentForm = (props: Props) => {
   const { navigation, route } = props;
@@ -25,9 +37,10 @@ const CommentForm = (props: Props) => {
   const user = useAppSelector((state: RootState) => state.user.user);
   const dispatch = useAppDispatch();
   const { colors } = useTheme();
-  const handleBtnBack = () => {
-    navigation.goBack();
-  };
+  const insets = useSafeAreaInsets();
+
+  const handleBtnBack = () => navigation.goBack();
+
   const [rate, setRate] = useState({
     "Vị trí": 5,
     "Giá cả": 5,
@@ -48,15 +61,15 @@ const CommentForm = (props: Props) => {
   ];
 
   const getValueRating = (value: number, title: string) => {
-    const cloneRate = { ...rate, [title]: value };
-    setRate(cloneRate);
+    setRate((prev) => ({ ...prev, [title]: value }));
   };
+
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.2,
+      quality: 0.7,
     });
     if (!result.canceled) {
       dispatch(setLoading());
@@ -65,63 +78,86 @@ const CommentForm = (props: Props) => {
     }
   };
 
-  //TODO: Handle Rating Restaurant
   const handleAddComment = async () => {
+    if (!image) return;
+    dispatch(setLoading());
     try {
-      const avgRating = Object.values(rate)
-        .reduce((total, current) => {
-          return total + current / 5;
-        }, 0)
-        .toFixed(1);
-      const { avatarName, avatarUrl } = await uploadImage(image!);
+      const avgRating = Number(
+        Object.values(rate)
+          .reduce((t, cur) => t + cur / 5, 0)
+          .toFixed(1)
+      );
+
+      const { avatarName, avatarUrl } = await uploadImage(
+        image,
+        `comments/${id}`
+      );
+
       const fullComment: IComment = {
         userId: user?.phone!,
         resId: id,
         comment: {
-          title: title,
-          content: content,
-          avgRating: Number(avgRating),
+          title,
+          content,
+          avgRating,
           imageUrl: avatarUrl,
           imageName: avatarName,
           timestamp: new Date(),
           vote: {},
         },
       };
+
       const commentDocRef = doc(collection(firebaseDb, "comments"));
-      await setDoc(commentDocRef, {
-        id: commentDocRef.id,
-        ...fullComment,
-      });
+      await setDoc(commentDocRef, { id: commentDocRef.id, ...fullComment });
       navigation.goBack();
     } catch (err) {
-      console.log(err);
+      console.log("upload/comment error:", err);
+    } finally {
+      dispatch(removeLoading());
     }
   };
 
   const disabledComment = !title || !content || !image;
 
   return (
-    <Box flex={1} bgColor={"#fff"}>
+    <Box flex={1} bgColor="#fff">
       <Header.BasicHeader
         title="Viết bình luận"
         handleBtnBack={handleBtnBack}
       />
-      <VStack flex={1} px={4} py={6} justifyContent={"space-between"}>
-        <VStack space={4}>
-          <Box>
+
+      {/* Đẩy nội dung khi bàn phím mở */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+      >
+        {/* Cuộn toàn màn hình, không bị overlay bởi nút dưới */}
+        <ScrollView
+          flex={1}
+          px={4}
+          pt={6}
+          // chừa chỗ cho footer button + safe area
+          contentContainerStyle={{
+            paddingBottom: BUTTON_HEIGHT + insets.bottom + 24,
+          }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <VStack space={4}>
             <Input
               p={3}
               fontSize={16}
               borderColor={colors.coolGray[300]}
               borderRadius={16}
               color={colors.coolGray[800]}
-              placeholder="Tiêu đề (Không bắt buộc)"
+              placeholder="Tiêu đề"
               placeholderTextColor={colors.coolGray[400]}
               value={title}
               onChangeText={setTitle}
+              returnKeyType="next"
+              blurOnSubmit={false}
             />
-          </Box>
-          <Box>
+
             <TextArea
               borderRadius={16}
               p={4}
@@ -136,38 +172,55 @@ const CommentForm = (props: Props) => {
               value={content}
               onChangeText={setContent}
             />
-          </Box>
-          <Center>
-            <TouchableOpacity style={styles.cameraBtn} onPress={pickImage}>
-              <Camera size="20" color="#1C1B1F" />
-            </TouchableOpacity>
-            {image && (
-              <Box width={"100%"} overflow={"hidden"}>
-                <Image
-                  source={image && { uri: image }}
-                  contentFit="contain"
-                  style={{ width: "100%", height: 200 }}
+
+            <Center>
+              <TouchableOpacity style={styles.cameraBtn} onPress={pickImage}>
+                <Camera size="20" color="#1C1B1F" />
+              </TouchableOpacity>
+
+              {image && (
+                <Box width="100%" overflow="hidden">
+                  <Image
+                    source={{ uri: image }}
+                    contentFit="cover"
+                    style={{ width: "100%", height: 200, borderRadius: 12 }}
+                  />
+                </Box>
+              )}
+            </Center>
+
+            <VStack space={4}>
+              {ratingOption.map((value) => (
+                <RatingGroup
+                  key={value}
+                  title={value}
+                  getValueRating={getValueRating}
                 />
-              </Box>
-            )}
-          </Center>
-          <VStack space={4}>
-            {ratingOption.map((value) => (
-              <Box key={value}>
-                <RatingGroup title={value} getValueRating={getValueRating} />
-              </Box>
-            ))}
+              ))}
+            </VStack>
           </VStack>
-          {/* TODO: Make Add image Camera Func */}
-        </VStack>
-        <Box mb={4}>
+        </ScrollView>
+
+        {/* Footer button cố định đáy, không bị bàn phím đè */}
+        <Box
+          position="absolute"
+          left={0}
+          right={0}
+          bottom={0}
+          px={4}
+          pb={Math.max(insets.bottom, 8)}
+          pt={8}
+          bg="#fff"
+          borderTopWidth={1}
+          borderColor="coolGray.200"
+        >
           <CustomButton
             btnText="Gửi"
             handleBtn={handleAddComment}
             disabled={disabledComment}
           />
         </Box>
-      </VStack>
+      </KeyboardAvoidingView>
     </Box>
   );
 };

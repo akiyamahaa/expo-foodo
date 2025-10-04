@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import { Alert, Box, HStack, Text, VStack } from "native-base";
 import InputLabel from "../../components/InputLabel";
@@ -23,10 +23,6 @@ const Login = (props: Props) => {
   const dispatch = useDispatch();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-
-  const onForgotPassword = () => {
-    navigation.navigate("ForgotPassword");
-  };
 
   const onSignUp = () => {
     navigation.navigate("SignUp");
@@ -70,7 +66,7 @@ const Login = (props: Props) => {
         />
 
         {/* Form login */}
-        <VStack w="100%" space={4}>
+        <VStack w="100%" space={2}>
           <InputLabel
             label="Số điện thoại"
             placeholder="Nhập số điện thoại/Email"
@@ -86,7 +82,7 @@ const Login = (props: Props) => {
             onChangeText={setPassword}
           />
 
-          <HStack justifyContent={"space-between"} mb={6}>
+          <HStack justifyContent={"space-between"} mb={4}>
             <Box>
               {error && (
                 <Text fontSize={12} fontWeight={400} color="error.500">
@@ -96,7 +92,7 @@ const Login = (props: Props) => {
             </Box>
           </HStack>
 
-          <Box px={"20%"}>
+          <Box>
             <CustomButton btnText={"Đăng nhập"} handleBtn={handleLogIn} />
           </Box>
         </VStack>
@@ -123,5 +119,3 @@ const Login = (props: Props) => {
 };
 
 export default Login;
-
-const styles = StyleSheet.create({});

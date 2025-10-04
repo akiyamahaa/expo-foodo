@@ -5,10 +5,14 @@ import { Box, Center, HStack, Text } from "native-base";
 type PickGenderProps = {
   gender: any;
   setGender: any;
-  disabled?: boolean
+  disabled?: boolean;
 };
 
-const PickGender = ({ gender, setGender, disabled = false }: PickGenderProps) => {
+const PickGender = ({
+  gender,
+  setGender,
+  disabled = false,
+}: PickGenderProps) => {
   const genderArr = [
     {
       gen: "M",
@@ -28,6 +32,7 @@ const PickGender = ({ gender, setGender, disabled = false }: PickGenderProps) =>
         justifyContent={"space-between"}
         borderColor={"muted.700"}
         borderRadius={100}
+        space={4}
       >
         {genderArr.map((elm) => (
           <TouchableOpacity

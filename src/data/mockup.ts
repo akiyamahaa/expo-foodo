@@ -1,7 +1,7 @@
 import uuid from "react-native-uuid";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { firebaseDb, firebaseStorage } from "../firebase";
-import { IMenuItem, IRestaurantMockup } from "../type/restaurant";
+import { IRestaurantMockup } from "../type/restaurant";
 import { ECategory, EDistrict } from "./utils";
 import { collection, doc, setDoc } from "firebase/firestore";
 
@@ -69,50 +69,36 @@ export const restaurantSample: IRestaurantMockup[] = [
     ],
   },
 ];
-export const uploadImage = async (uri: string) => {
-  // It won't upload image if image is not change
-  const blob: any = await new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.onload = function () {
-      resolve(xhr.response);
-    };
-    xhr.onerror = function (e) {
-      console.log(e);
-      reject(new TypeError("Network request failed"));
-    };
-    xhr.responseType = "blob";
-    xhr.open("GET", uri, true);
-    xhr.send(null);
-  });
-  const avatarName = uuid.v4() as string;
-  const fileRef = ref(firebaseStorage, avatarName);
-  await uploadBytes(fileRef, blob);
+export const uploadImage = async (uri: string, folder: string = "comments") => {
+  // 1) fetch blob có timeout (tránh treo)
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20000); // 20s
+  let res: Response;
+  try {
+    res = await fetch(uri, { signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+  if (!res.ok)
+    throw new Error(`Download failed: ${res.status} ${res.statusText}`);
 
-  // We're done with the blob, close and release it
-  blob.close();
+  const blob: Blob = await res.blob();
+  const contentType = (blob as any)?.type || "image/jpeg";
+  const ext = (contentType.split("/")[1] || "jpg").split(";")[0] || "jpg";
 
+  // 2) path gọn: comments/{resId}/{uuid}.ext
+  const clean = (s: string) => s.replace(/^\/+|\/+$/g, "");
+  const filename = `${uuid.v4()}.${ext}`;
+  const fullPath = `${clean(folder)}/${filename}`;
+
+  // 3) upload
+  const fileRef = ref(firebaseStorage, fullPath);
+  await uploadBytes(fileRef, blob, { contentType });
+
+  // 4) lấy URL
   const avatarUrl = await getDownloadURL(fileRef);
-  return { avatarName, avatarUrl };
+  return { avatarName: filename, avatarUrl, path: fullPath };
 };
-
-// export const createRes = async () => {
-//   const resUpload = restaurantSample.map(async (restaurant, index) => {
-//     const ResDocRef = doc(
-//       firebaseDb,
-//       "restaurants",
-//       `${index}
-//     `
-//     );
-//     const { avatarUrl } = await uploadImage(restaurant.image!);
-//     await setDoc(ResDocRef, {
-//       ...restaurant,
-//       id: ResDocRef.id,
-//       views: 0,
-//       image: avatarUrl,
-//     });
-//   });
-//   console.log("here");
-// };
 
 // Upload ảnh lên Storage vào folder chỉ định (dùng cho COVER)
 export async function uploadImageToFolder(uri: string, folderPath: string) {
