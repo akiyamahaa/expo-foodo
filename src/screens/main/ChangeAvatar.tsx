@@ -14,41 +14,74 @@ import { doc, updateDoc } from "firebase/firestore";
 import { firebaseDb } from "../../firebase";
 import CustomButton from "../../components/CustomButton";
 import { setUser } from "../../store/user.reducer";
-import { uploadImage } from "../../utils/image";
+import { uploadAvatarRaw } from "../../utils/cloudinary";
 
+// giữ Props như cũ
 type Props = {} & NativeStackScreenProps<RootStackParams, "ChangeAvatar">;
+
+type PickedAsset = {
+  uri: string;
+  mimeType?: string | null;
+  fileName?: string | null;
+};
 
 const ChangeAvatar = (props: Props) => {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state: RootState) => state.user.user);
-  const [image, setImage] = useState<string | null>(user?.avatarUrl!);
+  const [picked, setPicked] = useState<PickedAsset | null>(null);
   const { navigation } = props;
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.2,
+      // KHÔNG nén: bỏ quality hoặc để 1.0
+      quality: 1,
     });
     if (!result.canceled) {
       dispatch(setLoading());
-      setImage(result.assets[0].uri);
+      const a: any = result.assets[0];
+      setPicked({ uri: a.uri, mimeType: a.mimeType, fileName: a.fileName });
       dispatch(removeLoading());
     }
   };
 
   const updateAvatar = async () => {
-    const { avatarName, avatarUrl } = await uploadImage(image!);
-    const newUser: any = {
-      ...user,
-      avatarName: avatarName,
-      avatarUrl: avatarUrl,
-    };
-    await updateDoc(doc(firebaseDb, "users", user?.phone!), newUser);
-    await dispatch(setUser(newUser));
-    navigation.goBack();
+    if (!user?.phone) return;
+    if (!picked?.uri) return;
+    dispatch(setLoading());
+    try {
+      // Upload thẳng Cloudinary
+      const mime = picked.mimeType || "image/jpeg"; // fallback an toàn
+      const { url, publicId } = await uploadAvatarRaw(
+        picked.uri,
+        mime,
+        `avatars/${user.phone}`
+      );
+
+      const newUser: any = {
+        ...user,
+        avatarUrl: url,
+        avatarName: publicId,
+        cloudinaryPublicId: publicId,
+        cloudinaryRawUrl: url,
+      };
+      await updateDoc(doc(firebaseDb, "users", user.phone), newUser);
+      await dispatch(setUser(newUser));
+      navigation.goBack();
+    } catch (e) {
+      console.error(e); // nếu lỗi, xem log trả về từ Cloudinary (đã .text())
+    } finally {
+      dispatch(removeLoading());
+    }
   };
+
+  const previewUri =
+    picked?.uri ||
+    user?.avatarUrl ||
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgc2u0F9JdscSSIM4LH0ca2FLNgVS-vat7LSZKFb73azHEfhVfW7vwnFaq5bidMl1_tsg&usqp=CAU";
+
   return (
     <Box flex={1} bgColor={"#fff"}>
       <Header.BasicHeader
@@ -59,11 +92,7 @@ const ChangeAvatar = (props: Props) => {
         <Center flex={1}>
           <Box position={"relative"}>
             <Image
-              source={{
-                uri:
-                  image ||
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgc2u0F9JdscSSIM4LH0ca2FLNgVS-vat7LSZKFb73azHEfhVfW7vwnFaq5bidMl1_tsg&usqp=CAU",
-              }}
+              source={{ uri: previewUri }}
               style={{ width: 256, height: 256, borderRadius: 500 }}
             />
           </Box>

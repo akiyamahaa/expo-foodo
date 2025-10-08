@@ -12,11 +12,8 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParams } from "../../navigations/config";
 import { Box, Text, VStack, HStack, Pressable, useTheme } from "native-base";
 import { StatusBar } from "expo-status-bar";
-import { RootState, useAppSelector } from "../../store";
 
 type Props = {} & NativeStackScreenProps<RootStackParams, "Onboarding">;
-
-const { width, height } = Dimensions.get("window");
 
 // thay ảnh của bạn ở đây
 const SLIDES = [
@@ -182,12 +179,8 @@ export default function Onboarding({ navigation }: Props) {
 const styles = StyleSheet.create({
   bg: {
     flex: 1,
-    width,
-    height,
+
     justifyContent: "flex-end",
   },
-  bgImage: {
-    width,
-    height,
-  },
+  bgImage: {},
 });
