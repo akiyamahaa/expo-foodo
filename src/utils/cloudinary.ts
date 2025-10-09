@@ -1,5 +1,3 @@
-// utils/cloudinary.ts
-import * as ImageManipulator from "expo-image-manipulator";
 // TODO: Change your CLOUD_NAME and UPLOAD_PRESET
 const CLOUD_NAME = "dk0w90uw9";
 const UPLOAD_PRESET = "q4f5imix";

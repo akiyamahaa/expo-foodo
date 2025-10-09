@@ -25,11 +25,20 @@ import { collection, doc, setDoc } from "firebase/firestore";
 import { firebaseDb } from "../../firebase";
 import { IComment } from "../../type/restaurant";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ensureSmallImage, uploadImage } from "../../utils/image";
+// ❌ BỎ 2 import sau
+// import { ensureSmallImage, uploadImage } from "../../utils/image";
+// ✅ THÊM util Cloudinary
+import { uploadAvatarRaw } from "../../utils/cloudinary";
 
 type Props = {} & NativeStackScreenProps<RootStackParams, "CommentForm">;
 
 const BUTTON_HEIGHT = 56;
+
+type PickedAsset = {
+  uri: string;
+  mimeType?: string | null;
+  fileName?: string | null;
+};
 
 const CommentForm = (props: Props) => {
   const { navigation, route } = props;
@@ -50,7 +59,10 @@ const CommentForm = (props: Props) => {
   });
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [image, setImage] = useState<string | null>(null);
+  // ❌ image: string | null
+  // const [image, setImage] = useState<string | null>(null);
+  // ✅ lưu đủ asset
+  const [picked, setPicked] = useState<PickedAsset | null>(null);
 
   const ratingOption = [
     "Vị trí",
@@ -69,11 +81,12 @@ const CommentForm = (props: Props) => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.7,
+      quality: 1, // không nén
     });
     if (!result.canceled) {
       dispatch(setLoading());
-      setImage(result.assets[0].uri);
+      const a: any = result.assets[0];
+      setPicked({ uri: a.uri, mimeType: a.mimeType, fileName: a.fileName });
       dispatch(removeLoading());
     }
   };
@@ -87,7 +100,10 @@ const CommentForm = (props: Props) => {
   );
 
   const handleAddComment = async () => {
-    if (!image || submittingRef.current) return;
+    if (submittingRef.current) return;
+    if (!user?.phone) return;
+    if (!picked?.uri) return;
+
     submittingRef.current = true;
     dispatch(setLoading());
     try {
@@ -97,23 +113,23 @@ const CommentForm = (props: Props) => {
           .toFixed(1)
       );
 
-      // 🔒 Resize/nén trước khi upload
-      const safeUri = await ensureSmallImage(image);
-
-      const { avatarName, avatarUrl } = await uploadImage(
-        safeUri,
-        `comments/${id}`
+      // ✅ Upload trực tiếp Cloudinary (unsigned)
+      const mime = picked.mimeType || "image/jpeg";
+      const { url, publicId } = await uploadAvatarRaw(
+        picked.uri,
+        mime,
+        `comments/${id}` // folder theo resId
       );
 
       const fullComment: IComment = {
-        userId: user?.phone!,
+        userId: user.phone!,
         resId: id,
         comment: {
           title,
           content,
           avgRating,
-          imageUrl: avatarUrl,
-          imageName: avatarName,
+          imageUrl: url, // ✅ lưu url Cloudinary
+          imageName: publicId, // ✅ lưu public_id để quản lý/xoá sau này
           timestamp: new Date(),
           vote: {},
         },
@@ -124,14 +140,13 @@ const CommentForm = (props: Props) => {
       navigation.goBack();
     } catch (err) {
       console.log("upload/comment error:", err);
-      // bạn có thể hiện Toast ở đây
     } finally {
       submittingRef.current = false;
       dispatch(removeLoading());
     }
   };
 
-  const disabledComment = !title || !content || !image;
+  const disabledComment = !title || !content || !picked?.uri;
 
   return (
     <Box flex={1} bgColor="#fff">
@@ -140,18 +155,15 @@ const CommentForm = (props: Props) => {
         handleBtnBack={handleBtnBack}
       />
 
-      {/* Đẩy nội dung khi bàn phím mở */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
         keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
       >
-        {/* Cuộn toàn màn hình, không bị overlay bởi nút dưới */}
         <ScrollView
           flex={1}
           px={4}
           pt={6}
-          // chừa chỗ cho footer button + safe area
           contentContainerStyle={{
             paddingBottom: BUTTON_HEIGHT + insets.bottom + 24,
           }}
@@ -192,10 +204,10 @@ const CommentForm = (props: Props) => {
                 <Camera size="20" color="#1C1B1F" />
               </TouchableOpacity>
 
-              {image && (
+              {picked?.uri && (
                 <Box width="100%" overflow="hidden">
                   <Image
-                    source={{ uri: image }}
+                    source={{ uri: picked.uri }}
                     contentFit="cover"
                     style={{ width: "100%", height: 200, borderRadius: 12 }}
                   />
@@ -215,7 +227,6 @@ const CommentForm = (props: Props) => {
           </VStack>
         </ScrollView>
 
-        {/* Footer button cố định đáy, không bị bàn phím đè */}
         <Box
           position="absolute"
           left={0}
